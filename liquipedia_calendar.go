@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"fmt"
+	"google.golang.org/appengine"
 	"google.golang.org/appengine/memcache"
 	"log"
 	"net/http"
@@ -12,6 +13,7 @@ import (
 
 func main() {
 	http.HandleFunc("/", indexHandler)
+	appengine.Main()
 	port := os.Getenv("PORT")
 	if port == "" {
 		port = "8080"
@@ -30,11 +32,11 @@ func indexHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	item, err := get(r.Context())
-	if err != nil {
-		fmt.Fprint(w, item.Value)
+	if err != nil && item != nil {
+		fmt.Fprint(w, string(item.Value[:])+" from memcached.")
 	} else {
 		s := save(r.Context())
-		fmt.Fprint(w, s)
+		fmt.Fprint(w, s+" generated.")
 	}
 }
 
@@ -46,7 +48,7 @@ func save(ctx context.Context) string {
 	}
 	err := memcache.Set(ctx, item)
 	if err != nil {
-		return "Error writing to memcached."
+		return err.Error()
 	}
 	return now.String()
 }
