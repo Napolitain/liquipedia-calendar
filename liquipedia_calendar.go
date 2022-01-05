@@ -32,7 +32,9 @@ func indexHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	item, err := get(r.Context())
-	if err != nil && item != nil {
+	if err != nil {
+		fmt.Fprint(w, err.Error())
+	} else if item != nil {
 		fmt.Fprint(w, string(item.Value[:])+" from memcached.")
 	} else {
 		s := save(r.Context())
