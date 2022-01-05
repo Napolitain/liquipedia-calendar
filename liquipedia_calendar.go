@@ -1,10 +1,13 @@
 package main
 
 import (
+	"context"
 	"fmt"
+	"google.golang.org/appengine/memcache"
 	"log"
 	"net/http"
 	"os"
+	"time"
 )
 
 func main() {
@@ -25,8 +28,29 @@ func indexHandler(w http.ResponseWriter, r *http.Request) {
 		http.NotFound(w, r)
 		return
 	}
-	_, err := fmt.Fprint(w, "Hello, World!")
+
+	item, err := get(r.Context())
 	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
+		fmt.Fprint(w, item.Value)
+	} else {
+		s := save(r.Context())
+		fmt.Fprint(w, s)
 	}
+}
+
+func save(ctx context.Context) string {
+	now := time.Now()
+	item := &memcache.Item{
+		Key:   "data",
+		Value: []byte(now.String()),
+	}
+	err := memcache.Set(ctx, item)
+	if err != nil {
+		return "Error writing to memcached."
+	}
+	return now.String()
+}
+
+func get(ctx context.Context) (*memcache.Item, error) {
+	return memcache.Get(ctx, "data")
 }
