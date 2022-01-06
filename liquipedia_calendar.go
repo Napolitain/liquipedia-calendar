@@ -33,15 +33,14 @@ func indexHandler(w http.ResponseWriter, r *http.Request) {
 
 	item, err := get(r.Context())
 	if err != nil {
-		fmt.Fprint(w, err.Error())
-	} else if item != nil {
-		fmt.Fprint(w, string(item.Value[:])+" from memcached.")
-	} else {
 		s := save(r.Context())
-		fmt.Fprint(w, s+" generated.")
+		_, _ = fmt.Fprint(w, s+" generated.")
+	} else {
+		_, _ = fmt.Fprint(w, string(item.Value[:])+" from memcached.")
 	}
 }
 
+// save function is used to save data on Memcached server.
 func save(ctx context.Context) string {
 	now := time.Now()
 	item := &memcache.Item{
@@ -55,6 +54,7 @@ func save(ctx context.Context) string {
 	return now.String()
 }
 
+// get function is used to retrieve data from Memcached server.
 func get(ctx context.Context) (*memcache.Item, error) {
 	return memcache.Get(ctx, "data")
 }
