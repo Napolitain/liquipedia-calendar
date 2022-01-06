@@ -31,30 +31,51 @@ func indexHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	item, err := get(r.Context())
+	item, err := getFromCache(r.Context())
 	if err != nil {
-		s := save(r.Context())
-		_, _ = fmt.Fprint(w, s+" generated.")
+		cache, err := saveToCache(r.Context())
+		if err != nil {
+			_, _ = fmt.Fprint(w, err.Error())
+		}
+		_, _ = fmt.Fprint(w, cache.String()+" generated.")
 	} else {
 		_, _ = fmt.Fprint(w, string(item.Value[:])+" from memcached.")
 	}
 }
 
-// save function is used to save data on Memcached server.
-func save(ctx context.Context) string {
+// saveToCache function is used to saveToCache data on Memcached server.
+func saveToCache(ctx context.Context) (time.Time, error) {
 	now := time.Now()
 	item := &memcache.Item{
 		Key:   "data",
 		Value: []byte(now.String()),
 	}
 	err := memcache.Set(ctx, item)
-	if err != nil {
-		return err.Error()
-	}
-	return now.String()
+	return now, err
 }
 
-// get function is used to retrieve data from Memcached server.
-func get(ctx context.Context) (*memcache.Item, error) {
+// getFromCache function is used to retrieve data from Memcached server.
+func getFromCache(ctx context.Context) (*memcache.Item, error) {
 	return memcache.Get(ctx, "data")
+}
+
+// getFromLiquipedia function
+func getFromLiquipedia(game string) (*http.Response, error) {
+	client := http.Client{}
+	url := "https://liquipedia.net/" + game + "api.php?action=parse&format=json&page=Liquipedia:Upcoming_and_ongoing_matches"
+	req, err := http.NewRequest("GET", url, nil)
+	if err != nil {
+		return nil, err
+	}
+	req.Header = http.Header{
+		"Host":            []string{"liquipedia.net"},
+		"Content-Type":    []string{"application/json"},
+		"Accept-Encoding": []string{"gzip"},
+	}
+	response, err := client.Do(req)
+	if err != nil {
+		return nil, err
+	} else {
+		return response, nil
+	}
 }
