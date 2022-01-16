@@ -20,9 +20,6 @@ jobs:
         
     - name: Dependencies
       run: go get google.golang.org/appengine/memcache
-      
-    - name: Pre build
-      run: go mod init dummy
 
     - name: Build
       run: go build -v ./...
