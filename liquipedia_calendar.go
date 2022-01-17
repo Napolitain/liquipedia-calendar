@@ -2,7 +2,6 @@ package main
 
 import (
 	"bytes"
-	"encoding/json"
 	"fmt"
 	"github.com/PuerkitoBio/goquery"
 	"google.golang.org/appengine"
@@ -31,26 +30,15 @@ func indexHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Get data from either cache or scrapping.
+	// Get data from either cache or scrapping. JSON already parsed and filtered HTML.
 	data, err := getData(r.Context(), "ageofempires")
 	if err != nil {
 		log.Fatal(err)
 		return
 	}
 
-	// Declared an empty map interface
-	var result map[string]map[string]map[string][]byte
-	// Unmarshal or Decode the JSON to the interface.
-	err = json.Unmarshal(data, &result)
-	if err != nil {
-		log.Fatal(err)
-		return
-	}
-	parse := result["parse"]["body"]["*"]
-	_, _ = fmt.Fprintln(w, parse)
-
 	// Load the HTML document
-	reader := bytes.NewReader(parse)
+	reader := bytes.NewReader(data)
 	var document *goquery.Document
 	document, err = goquery.NewDocumentFromReader(reader)
 	if err != nil {

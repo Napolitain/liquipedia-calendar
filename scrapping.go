@@ -1,6 +1,9 @@
 package main
 
-import "net/http"
+import (
+	"encoding/json"
+	"net/http"
+)
 
 // getFromLiquipedia function
 func getFromLiquipedia(game string) (*http.Response, error) {
@@ -16,4 +19,17 @@ func getFromLiquipedia(game string) (*http.Response, error) {
 		return nil, err
 	}
 	return response, nil
+}
+
+// parseJSON parses JSON response from liquipedia and returns []byte containing HTML.
+func parseJSON(in []byte) ([]byte, error) {
+	// Declared an empty map interface
+	var result map[string]interface{}
+	// Unmarshal or Decode the JSON to the interface.
+	err := json.Unmarshal(in, &result)
+	if err != nil {
+		return nil, err
+	}
+	parse := result["parse"].(map[string]interface{})["text"].(map[string]interface{})["*"].([]byte)
+	return parse, nil
 }

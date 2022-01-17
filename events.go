@@ -18,7 +18,15 @@ func getData(ctx context.Context, game string) ([]byte, error) {
 		if response.StatusCode != 200 {
 			return nil, err
 		}
+
+		// Convert from io to []byte
 		body, err := ioutil.ReadAll(response.Body)
+		if err != nil {
+			return nil, err
+		}
+
+		// parse JSON
+		body, err = parseJSON(body)
 		if err != nil {
 			return nil, err
 		}
