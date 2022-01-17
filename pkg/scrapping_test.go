@@ -1,4 +1,4 @@
-package main
+package pkg
 
 import (
 	"io/ioutil"
@@ -21,4 +21,14 @@ func TestGetFromLiquipedia(t *testing.T) {
 		return
 	}
 	t.Log(string(body[:]))
+}
+
+func TestParseJSON(t *testing.T) {
+	input := []byte(`{"parse":{"title":"Liquipedia:Upcoming and ongoing matches","pageid":64908,"revid":2145797,"text":{"*":"<div class="mw-parser-output">}}}`)
+	bytes, err := parseJSON(input)
+	if err != nil {
+		t.Fatal(err.Error())
+		return
+	}
+	t.Log(bytes)
 }
