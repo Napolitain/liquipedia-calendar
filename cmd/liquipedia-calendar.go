@@ -6,6 +6,7 @@ import (
 	"github.com/PuerkitoBio/goquery"
 	"google.golang.org/appengine"
 	"log"
+	"napolitain/liquipedia-calendar/v2/pkg"
 	"net/http"
 	"os"
 )
@@ -31,7 +32,7 @@ func indexHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Get data from either cache or scrapping. JSON already parsed and filtered HTML.
-	data, err := getData(r.Context(), "ageofempires")
+	data, err := pkg.GetData(r.Context(), "ageofempires")
 	if err != nil {
 		log.Fatal(err)
 		return
