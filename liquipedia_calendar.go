@@ -1,9 +1,10 @@
 package main
 
 import (
+	"bytes"
 	"fmt"
+	"github.com/PuerkitoBio/goquery"
 	"google.golang.org/appengine"
-	"io/ioutil"
 	"log"
 	"net/http"
 	"os"
@@ -29,29 +30,23 @@ func indexHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	item, err := getFromCache(r.Context())
+	data, err := getData(r.Context(), "ageofempires")
 	if err != nil {
-		response, err := getFromLiquipedia("ageofempires")
-		if err != nil {
-			_, _ = fmt.Fprint(w, err.Error())
-			return
-		}
-		if response.StatusCode != 200 {
-			_, _ = fmt.Fprint(w, response.Status)
-			return
-		}
-		body, err := ioutil.ReadAll(response.Body)
-		if err != nil {
-			_, _ = fmt.Fprint(w, err.Error())
-			return
-		}
-
-		err = saveToCache(r.Context(), string(body[:]))
-		if err != nil {
-			_, _ = fmt.Fprint(w, err.Error())
-		}
-		_, _ = fmt.Fprint(w, string(body[:])+" generated.")
-	} else {
-		_, _ = fmt.Fprint(w, string(item.Value[:])+" from memcached.")
+		log.Fatal(err)
+		return
 	}
+
+	// Load the HTML document
+	reader := bytes.NewReader(data)
+	document, err := goquery.NewDocumentFromReader(reader)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	// Find the review items
+	document.Find(".left-content article .post-title").Each(func(i int, s *goquery.Selection) {
+		// For each item found, get the title
+		title := s.Find("a").Text()
+		fmt.Printf("Review %d: %s\n", i, title)
+	})
 }
