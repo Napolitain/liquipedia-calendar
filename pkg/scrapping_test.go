@@ -24,7 +24,7 @@ func TestGetFromLiquipedia(t *testing.T) {
 }
 
 func TestParseJSON(t *testing.T) {
-	input := []byte(`{"parse":{"title":"Liquipedia:Upcoming and ongoing matches","pageid":64908,"revid":2145797,"text":{"*":"<div class="mw-parser-output">}}}`)
+	input := []byte(`{"parse":{"title":"Liquipedia:Upcoming and ongoing matches","pageid":64908,"revid":2145797,"text":{"*":"<div class=\"mw-parser-output\">"}}}`)
 	bytes, err := parseJSON(input)
 	if err != nil {
 		t.Fatal(err.Error())

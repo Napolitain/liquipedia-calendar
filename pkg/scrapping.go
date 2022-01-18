@@ -30,6 +30,6 @@ func parseJSON(in []byte) ([]byte, error) {
 	if err != nil {
 		return nil, err
 	}
-	parse := result["parse"].(map[string]interface{})["text"].(map[string]interface{})["*"].([]byte)
-	return parse, nil
+	parse := result["parse"].(map[string]interface{})["text"].(map[string]interface{})["*"].(string)
+	return []byte(parse), nil
 }
