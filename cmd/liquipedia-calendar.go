@@ -3,10 +3,10 @@ package main
 import (
 	"bytes"
 	"fmt"
+	"github.com/Napolitain/liquipedia-calendar/pkg"
 	"github.com/PuerkitoBio/goquery"
 	"google.golang.org/appengine"
 	"log"
-	"napolitain/liquipedia-calendar/v2/pkg"
 	"net/http"
 	"os"
 )
@@ -31,8 +31,13 @@ func indexHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	game := r.URL.Query().Get("game")
+	if game != "" {
+		log.Print("No game querystring")
+	}
+
 	// Get data from either cache or scrapping. JSON already parsed and filtered HTML.
-	data, err := pkg.GetData(r.Context(), "ageofempires")
+	data, err := pkg.GetData(r.Context(), game)
 	if err != nil {
 		log.Fatal(err)
 		return
