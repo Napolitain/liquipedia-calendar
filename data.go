@@ -1,12 +1,12 @@
-package pkg
+package main
 
 import (
 	"context"
 	"io/ioutil"
 )
 
-// GetData returns data in []byte format from either cache or scrapping
-func GetData(ctx context.Context, game string) ([]byte, error) {
+// getData returns data in []byte format from either cache or scrapping
+func getData(ctx context.Context, game string) ([]byte, error) {
 	// Get data from cache server
 	item, err := getFromCache(ctx, game)
 	if err != nil {
