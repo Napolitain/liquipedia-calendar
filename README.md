@@ -4,6 +4,7 @@
 
 I made initially this project in Python / Flask / Redis, but eventually ran into maintenance problems.
 You can look nonetheless at its repository.
+
 Link : https://github.com/Napolitain/sc2-calendar
 
 Now, written in Go, and using Memcached mostly because of its free tier, the application is more maintenable and faster.
