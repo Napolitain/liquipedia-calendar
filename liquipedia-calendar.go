@@ -59,7 +59,7 @@ func indexHandler(w http.ResponseWriter, r *http.Request) {
 	cal := ics.NewCalendar()
 	cal.SetMethod(ics.MethodRequest)
 	cal.SetProductId("-//liquipedia-calendar//en")
-	cal.SetVersion("3.0")
+	cal.SetVersion("2.0")
 
 	matches := document.Find(".infobox_matches_content")
 	for i := 0; i < matches.Size(); i++ {
