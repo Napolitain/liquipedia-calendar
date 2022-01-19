@@ -85,12 +85,14 @@ func indexHandler(w http.ResponseWriter, r *http.Request) {
 		event.SetDtStampTime(time.Now())
 		event.SetModifiedAt(time.Now())
 		event.SetStartAt(time.Unix(timestamp, 0))
-		event.SetEndAt(time.Unix(timestamp+1800, 0))
+		event.SetEndAt(time.Unix(timestamp+3600, 0))
 		event.SetSummary(teamleft + " - " + teamright)
 		event.SetLocation(tournament + " (" + matchFormat + ")")
-		event.SetDescription("Description")
-		event.SetURL("https://URL/")
 	}
 	w.Header().Set("Content-Disposition", "attachment; filename=sc2calendar.ics")
-	fmt.Fprintf(w, cal.Serialize())
+	_, err = fmt.Fprintf(w, cal.Serialize())
+	if err != nil {
+		log.Fatal("Error while printing serialized calendar.")
+		return
+	}
 }
