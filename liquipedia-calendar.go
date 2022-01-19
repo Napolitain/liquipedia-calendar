@@ -9,6 +9,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"strconv"
 	"time"
 )
 
@@ -46,26 +47,6 @@ func indexHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Create iCalendar
-	cal := ics.NewCalendar()
-	cal.SetMethod(ics.MethodRequest)
-	cal.SetProductId("-//liquipedia-calendar//en")
-	cal.SetVersion("3.0")
-	event := cal.AddEvent(fmt.Sprintf("id@domain", p.SessionKey.IntID()))
-	event.SetCreatedTime(time.Now())
-	event.SetDtStampTime(time.Now())
-	event.SetModifiedAt(time.Now())
-	event.SetStartAt(time.Now())
-	event.SetEndAt(time.Now())
-	event.SetSummary("Summary")
-	event.SetLocation("Address")
-	event.SetDescription("Description")
-	event.SetURL("https://URL/")
-	event.AddRrule(fmt.Sprintf("FREQ=YEARLY;BYMONTH=%d;BYMONTHDAY=%d", time.Now().Month(), time.Now().Day()))
-	event.SetOrganizer("sender@domain", ics.WithCN("This Machine"))
-	event.AddAttendee("reciever or participant", ics.CalendarUserTypeIndividual, ics.ParticipationStatusNeedsAction, ics.ParticipationRoleReqParticipant, ics.WithRSVP(true))
-	// cal.Serialize()
-
 	// Load the HTML document
 	reader := bytes.NewReader(data)
 	var document *goquery.Document
@@ -74,10 +55,42 @@ func indexHandler(w http.ResponseWriter, r *http.Request) {
 		log.Fatal(err)
 	}
 
-	// Find the review items
-	document.Find(".left-content article .post-title").Each(func(i int, s *goquery.Selection) {
-		// For each item found, get the title
-		title := s.Find("a").Text()
-		fmt.Printf("Review %d: %s\n", i, title)
-	})
+	// Create iCalendar
+	cal := ics.NewCalendar()
+	cal.SetMethod(ics.MethodRequest)
+	cal.SetProductId("-//liquipedia-calendar//en")
+	cal.SetVersion("3.0")
+
+	matches := document.Find(".infobox_matches_content")
+	for i := 0; i < matches.Size(); i++ {
+		teamleft := matches.Eq(i).Find(".team-left a").Eq(0).Text()
+		teamright := matches.Eq(i).Find(".team-right span:not(.flag):not(.team-template-image):not(.team-template-team-short) a").Eq(0).Text()
+		matchFormat := matches.Eq(i).Find(".versus abbr").Eq(0).Text()
+		timestampStr, exist := matches.Eq(i).Find("[data-timestamp]").Eq(0).Attr("data-timestamp")
+		if exist != true {
+			log.Fatal("Timestamp doesn't exist.")
+			return
+		}
+		timestamp, err := strconv.ParseInt(timestampStr, 10, 64)
+		if err != nil {
+			log.Fatal("Error while converting string to int.")
+			return
+		}
+		tournament := matches.Eq(i).Find(".match-filler div div a").Eq(0).Text()
+		uid := timestampStr + teamleft + teamright + tournament + "@lcalendar"
+		//uid = strings.ReplaceAll(uid, " ", "")
+
+		event := cal.AddEvent(uid)
+		event.SetCreatedTime(time.Now())
+		event.SetDtStampTime(time.Now())
+		event.SetModifiedAt(time.Now())
+		event.SetStartAt(time.Unix(timestamp, 0))
+		event.SetEndAt(time.Unix(timestamp+1800, 0))
+		event.SetSummary(teamleft + " - " + teamright)
+		event.SetLocation(tournament + " (" + matchFormat + ")")
+		event.SetDescription("Description")
+		event.SetURL("https://URL/")
+	}
+	w.Header().Set("Content-Disposition", "attachment; filename=sc2calendar.ics")
+	fmt.Fprintf(w, cal.Serialize())
 }
