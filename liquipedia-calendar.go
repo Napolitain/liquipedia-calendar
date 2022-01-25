@@ -78,7 +78,6 @@ func indexHandler(w http.ResponseWriter, r *http.Request) {
 		}
 		tournament := matches.Eq(i).Find(".match-filler div div a").Eq(0).Text()
 		uid := timestampStr + teamleft + teamright + tournament + "@lcalendar"
-		//uid = strings.ReplaceAll(uid, " ", "")
 
 		event := cal.AddEvent(uid)
 		event.SetCreatedTime(time.Now())
@@ -88,8 +87,12 @@ func indexHandler(w http.ResponseWriter, r *http.Request) {
 		event.SetEndAt(time.Unix(timestamp+3600, 0))
 		event.SetSummary(teamleft + " - " + teamright)
 		event.SetLocation(tournament + " (" + matchFormat + ")")
+		if i == 0 {
+			log.Println(event.Serialize())
+		}
 	}
 	w.Header().Set("Content-Disposition", "attachment; filename=sc2calendar.ics")
+	w.Header().Set("Content-Type", "text/calendar")
 	_, err = fmt.Fprintf(w, cal.Serialize())
 	if err != nil {
 		log.Fatal("Error while printing serialized calendar.")
