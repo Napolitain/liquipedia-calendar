@@ -15,20 +15,18 @@ func TestGetFromLiquipedia(t *testing.T) {
 		t.Fatal(response.Status)
 		return
 	}
-	body, err := ioutil.ReadAll(response.Body)
+	_, err = ioutil.ReadAll(response.Body)
 	if err != nil {
 		t.Fatal(err.Error())
 		return
 	}
-	t.Log(string(body[:]))
 }
 
 func TestParseJSON(t *testing.T) {
 	input := []byte(`{"parse":{"title":"Liquipedia:Upcoming and ongoing matches","pageid":64908,"revid":2145797,"text":{"*":"<div class=\"mw-parser-output\">"}}}`)
-	bytes, err := parseJSON(input)
+	_, err := parseJSON(input)
 	if err != nil {
 		t.Fatal(err.Error())
 		return
 	}
-	t.Log(bytes)
 }

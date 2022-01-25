@@ -1,4 +1,4 @@
-module github.com/Napolitain/liquipedia-calendar
+module github.com/Napolitain/liquipedia_calendar
 
 go 1.11
 
