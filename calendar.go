@@ -47,7 +47,7 @@ func getData(ctx context.Context, game string) ([]byte, error) {
 	}
 }
 
-func createCalendar(document *goquery.Document) (*ics.Calendar, error) {
+func createCalendar(document *goquery.Document, queries *Queries) (*ics.Calendar, error) {
 	// Create iCalendar
 	cal := ics.NewCalendar()
 	cal.SetMethod(ics.MethodRequest)
@@ -56,9 +56,11 @@ func createCalendar(document *goquery.Document) (*ics.Calendar, error) {
 	cal.SetLastModified(time.Now())
 	// Create events
 	matches := document.Find(".infobox_matches_content")
+	selectorString :=
 	var UIDs []string
 	for i := 0; i < matches.Size(); i++ {
 		// Get event info
+		if
 		teamleft := matches.Eq(i).Find(".team-left a").Eq(0).Text()
 		teamright := matches.Eq(i).Find(".team-right span:not(.flag):not(.team-template-image):not(.team-template-team-short) a").Eq(0).Text()
 		matchFormat := matches.Eq(i).Find(".versus abbr").Eq(0).Text()
@@ -82,6 +84,7 @@ func createCalendar(document *goquery.Document) (*ics.Calendar, error) {
 		if flag {
 			continue
 		}
+		UIDs = append(UIDs, uid)
 		// Add event
 		event := cal.AddEvent(uid)
 		event.SetCreatedTime(time.Now())

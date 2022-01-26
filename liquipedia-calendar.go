@@ -30,15 +30,18 @@ func indexHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Get game's name from querystring.
-	game := r.URL.Query().Get("game")
-	if game == "" {
+	// Get querystring's name from querystring.
+	querystring := r.URL.Query().Get("query")
+	if querystring == "" {
 		log.Fatal("No query string provided.")
 		return
 	}
 
+	// Get query struct
+	queries := newQueries(querystring)
+
 	// Get data from either cache or scrapping. JSON already parsed and filtered HTML.
-	data, err := getData(r.Context(), game)
+	data, err := getData(r.Context(), querystring)
 	if err != nil {
 		log.Fatal(err)
 		return
@@ -53,7 +56,7 @@ func indexHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Create iCalendar
-	cal, err := createCalendar(document)
+	cal, err := createCalendar(document, queries)
 	if err != nil {
 		log.Fatal(err)
 	}
