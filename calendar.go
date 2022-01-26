@@ -56,7 +56,7 @@ func createCalendar(document *goquery.Document) (*ics.Calendar, error) {
 	cal.SetLastModified(time.Now())
 	// Create events
 	matches := document.Find(".infobox_matches_content")
-	uidSeed := newUidSeed()
+	var UIDs []string
 	for i := 0; i < matches.Size(); i++ {
 		// Get event info
 		teamleft := matches.Eq(i).Find(".team-left a").Eq(0).Text()
@@ -71,12 +71,16 @@ func createCalendar(document *goquery.Document) (*ics.Calendar, error) {
 			return nil, errors.New("Error while converting string to int.")
 		}
 		tournament := matches.Eq(i).Find(".match-filler div div a").Eq(0).Text()
-		var uid string
-		if teamleft == "" || teamright == "" { // If player is undetermined, generate random UID
-			uid = timestampStr + string(uidSeed.data[:]) + tournament + "@lcalendar"
-			incrementUidSeed(uidSeed)
-		} else { // Else generate UID with known values
-			uid = timestampStr + teamleft + teamright + tournament + "@lcalendar"
+		uid := timestampStr + teamleft + teamright + tournament + "@lcalendar"
+		flag := false // Ignore identical UIDs for now
+		for j := 0; j < len(UIDs); j++ {
+			if UIDs[j] == uid {
+				flag = true
+				break
+			}
+		}
+		if flag {
+			continue
 		}
 		// Add event
 		event := cal.AddEvent(uid)
