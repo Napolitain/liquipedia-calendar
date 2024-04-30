@@ -10,6 +10,13 @@ jobs:
 
   build:
     runs-on: ubuntu-latest
+    permissions:
+      contents: 'read'
+      id-token: 'write'
+    env:
+      GCLOUD_SERVICE_ACCOUNT: ${{ secrets.GCLOUD_SERVICE_ACCOUNT }}
+      WORKLOAD_IDENTITY_FEDERATION_URL: ${{ WORKLOAD_IDENTITY_FEDERATION_URL }}
+
     steps:
     - uses: actions/checkout@v2
 
@@ -26,3 +33,13 @@ jobs:
 
     - name: Test
       run: go test -v ./...
+
+    - name: Auth to Google Cloud
+      uses: 'google-github-actions/auth@v2'
+      with:
+        project_id: 'liquipedia-calendar'
+        workload_identity_provider: WORKLOAD_IDENTITY_FEDERATION_URL
+        service_account: GCLOUD_SERVICE_ACCOUNT
+
+    - name: Deploy to Google Cloud App Engine
+      uses: 'google-github-actions/deploy-appengine@v2'
