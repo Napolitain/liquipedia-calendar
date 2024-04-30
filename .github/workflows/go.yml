@@ -39,3 +39,6 @@ jobs:
 
     - name: Deploy to Google Cloud App Engine
       uses: 'google-github-actions/deploy-appengine@v2'
+      with:
+          project_id: 'liquipedia-calendar'
+          service_account: ${{ secrets.GCLOUD_SERVICE_ACCOUNT_DEPLOY }}
