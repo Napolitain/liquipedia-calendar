@@ -1,6 +1,6 @@
 module github.com/Napolitain/liquipedia_calendar
 
-go 1.11
+go 1.22
 
 require google.golang.org/appengine v1.6.8
 
