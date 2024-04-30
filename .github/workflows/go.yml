@@ -34,7 +34,7 @@ jobs:
       uses: 'google-github-actions/auth@v2'
       with:
         project_id: 'liquipedia-calendar'
-        workload_identity_provider: ${{ GCLOUD_WORKLOAD_IDENTITY_FEDERATION }}
+        workload_identity_provider: ${{ secrets.GCLOUD_WORKLOAD_IDENTITY_FEDERATION }}
         service_account: ${{ secrets.GCLOUD_SERVICE_ACCOUNT_DEPLOY }}
 
     - name: Deploy to Google Cloud App Engine
