@@ -7,7 +7,7 @@ import (
 
 // getFromLiquipedia function
 func getFromLiquipedia(game string) (*http.Response, error) {
-	url := "https://liquipedia.net/" + game + "/api.php?action=parse&format=json&page=Liquipedia:Upcoming_and_ongoing_matches"
+	url := BASE_URL + game + UPCOMING_MATCHES
 	client := http.Client{}
 	request, err := http.NewRequest("GET", url, nil)
 	if err != nil {

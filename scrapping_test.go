@@ -1,7 +1,7 @@
 package main
 
 import (
-	"io/ioutil"
+	"io"
 	"testing"
 )
 
@@ -15,7 +15,7 @@ func TestGetFromLiquipedia(t *testing.T) {
 		t.Fatal(response.Status)
 		return
 	}
-	_, err = ioutil.ReadAll(response.Body)
+	_, err = io.ReadAll(response.Body)
 	if err != nil {
 		t.Fatal(err.Error())
 		return

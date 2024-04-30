@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"fmt"
 	"github.com/PuerkitoBio/goquery"
-	"google.golang.org/appengine"
 	"log"
 	"net/http"
 	"os"
@@ -12,7 +11,6 @@ import (
 
 func main() {
 	http.HandleFunc("/", indexHandler)
-	appengine.Main()
 	port := os.Getenv("PORT")
 	if port == "" {
 		port = "8080"
@@ -30,7 +28,7 @@ func indexHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Get querystring's name from querystring.
+	// Get query string's name from querystring.
 	querystring := r.URL.Query().Get("query")
 	if querystring == "" {
 		log.Fatal("No query string provided.")
@@ -56,12 +54,12 @@ func indexHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Create iCalendar
-	cal, err := createCalendar(document, queries)
+	cal, err := queries.createCalendar(document)
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	w.Header().Set("Content-Disposition", "attachment; filename=sc2calendar.ics")
+	w.Header().Set("Content-Disposition", "attachment; filename=liquipedia.ics")
 	w.Header().Set("Content-Type", "text/calendar")
 	_, err = fmt.Fprintf(w, cal.Serialize())
 	if err != nil {

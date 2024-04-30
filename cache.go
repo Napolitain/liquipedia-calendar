@@ -7,6 +7,7 @@ import (
 )
 
 // saveToCache function is used to saveToCache data on Memcached server.
+// A cached entry is a game entry valid for 3 hours. Every player is cached at once, and then can be filtered down.
 func saveToCache(ctx context.Context, data string, game string) error {
 	item := &memcache.Item{
 		Key:        game,

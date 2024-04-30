@@ -1,14 +1,66 @@
 package main
 
 import (
+	"bytes"
 	"context"
+	"encoding/hex"
 	"errors"
 	"github.com/PuerkitoBio/goquery"
 	ics "github.com/arran4/golang-ical"
-	"io/ioutil"
+	"io"
 	"strconv"
 	"time"
 )
+
+// Convert [][]byte to []string
+func byte2DToString1D(byte2d [][]byte) []string {
+	var p []string
+	for i := 0; i < len(byte2d); i++ {
+		p = append(p, string(byte2d[i][:]))
+	}
+	return p
+}
+
+// Query struct
+// ex: g=starcraft2&p=maru,serral
+type Query struct {
+	game    string
+	players []string
+}
+
+// Create a Query struct
+func newQuery(game string, players string) *Query {
+	decodeString := bytes.Split([]byte(players), []byte(","))
+	p := byte2DToString1D(decodeString)
+	return &Query{game: game, players: p}
+}
+
+// Queries struct
+// ex: Queries=hexadecimal (g=starcraft2&p=maru,serral;g=ageofempires&p=theviper)
+type Queries struct {
+	data []Query
+}
+
+type Calendar interface {
+	createCalendar(document *goquery.Document) (*ics.Calendar, error)
+}
+
+// Create a Queries struct (made of multiple Query)
+func newQueries(query string) *Queries {
+	decodeString, err := hex.DecodeString(query)
+	if err != nil {
+		return nil
+	}
+	queries := bytes.Split(decodeString, []byte(";")) // g=starcraft2&p=maru,serral
+	var result Queries
+	for i := 0; i < len(queries); i++ {
+		q := bytes.Split(queries[i], []byte("&")) // g=starcraft2
+		game := bytes.Split(q[0], []byte("="))
+		players := bytes.Split(q[1], []byte("="))
+		result.data = append(result.data, *newQuery(string(game[1][:]), string(players[1][:])))
+	}
+	return &result
+}
 
 // getData returns data in []byte format from either cache or scrapping
 func getData(ctx context.Context, game string) ([]byte, error) {
@@ -25,7 +77,7 @@ func getData(ctx context.Context, game string) ([]byte, error) {
 		}
 
 		// Convert from io to []byte
-		body, err := ioutil.ReadAll(response.Body)
+		body, err := io.ReadAll(response.Body)
 		if err != nil {
 			return nil, err
 		}
@@ -47,7 +99,10 @@ func getData(ctx context.Context, game string) ([]byte, error) {
 	}
 }
 
-func createCalendar(document *goquery.Document, queries *Queries) (*ics.Calendar, error) {
+/**
+ * createCalendar inherits from Queries struct
+ */
+func (queries Queries) createCalendar(document *goquery.Document) (*ics.Calendar, error) {
 	// Create iCalendar
 	cal := ics.NewCalendar()
 	cal.SetMethod(ics.MethodRequest)
@@ -56,11 +111,9 @@ func createCalendar(document *goquery.Document, queries *Queries) (*ics.Calendar
 	cal.SetLastModified(time.Now())
 	// Create events
 	matches := document.Find(".infobox_matches_content")
-	selectorString :=
 	var UIDs []string
 	for i := 0; i < matches.Size(); i++ {
 		// Get event info
-		if
 		teamleft := matches.Eq(i).Find(".team-left a").Eq(0).Text()
 		teamright := matches.Eq(i).Find(".team-right span:not(.flag):not(.team-template-image):not(.team-template-team-short) a").Eq(0).Text()
 		matchFormat := matches.Eq(i).Find(".versus abbr").Eq(0).Text()

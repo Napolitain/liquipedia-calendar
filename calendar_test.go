@@ -3,10 +3,20 @@ package main
 import (
 	"bytes"
 	"github.com/PuerkitoBio/goquery"
+	ics "github.com/arran4/golang-ical"
 	"google.golang.org/appengine/aetest"
 	"log"
 	"testing"
 )
+
+type QueriesMock struct {
+	data []Query
+}
+
+func (queries QueriesMock) createCalendar(document *goquery.Document) (*ics.Calendar, error) {
+	//TODO implement me
+	panic("implement me")
+}
 
 func TestCreateCalendar(t *testing.T) {
 	return // app engine context is difficult to setup
@@ -29,7 +39,8 @@ func TestCreateCalendar(t *testing.T) {
 		log.Fatal(err)
 	}
 	// Create iCalendar
-	cal, err := createCalendar(document)
+	myQuery := Queries{}
+	cal, err := myQuery.createCalendar(document)
 	if err != nil {
 		t.Fatal(err)
 	}
