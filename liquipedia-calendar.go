@@ -7,15 +7,28 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"cloud.google.com/go/logging"
 )
 
 func main() {
-	http.HandleFunc("/", indexHandler)
-	port := "8080"
+	// Creates a client.
+	ctx := context.Background()
+	client, err := logging.NewClient(ctx, "liquipedia-calendar")
+	if err != nil {
+		log.Fatalf("Failed to create logging client: %v", err)
+	}
+	defer client.Close()
+	logger := client.Logger("main-service").StandardLogger(logging.Info)
 
-	log.Printf("Listening on port %s", port)
-	log.Printf("Open http://localhost:%s in the browser", port)
-	log.Fatal(http.ListenAndServe(fmt.Sprintf(":%s", port), nil))
+	http.HandleFunc("/", indexHandler)
+	port := os.Getenv("PORT")
+	if port == "" {
+		port = "8080"
+		logger.Printf("Defaulting to port %s", port)
+	}
+
+	logger.Printf("Listening on port %s", port)
+	logger.Fatal(http.ListenAndServe(fmt.Sprintf(":%s", port), nil))
 }
 
 func indexHandler(w http.ResponseWriter, r *http.Request) {
@@ -37,7 +50,7 @@ func indexHandler(w http.ResponseWriter, r *http.Request) {
 	// Get data from either cache or scrapping. JSON already parsed and filtered HTML.
 	data, err := getData(r.Context(), querystring)
 	if err != nil {
-		log.Fatal(err)
+		logger.Fatal(err)
 		return
 	}
 
@@ -46,20 +59,20 @@ func indexHandler(w http.ResponseWriter, r *http.Request) {
 	var document *goquery.Document
 	document, err = goquery.NewDocumentFromReader(reader)
 	if err != nil {
-		log.Fatal(err)
+		logger.Fatal(err)
 	}
 
 	// Create iCalendar
 	cal, err := queries.createCalendar(document)
 	if err != nil {
-		log.Fatal(err)
+		logger.Fatal(err)
 	}
 
 	w.Header().Set("Content-Disposition", "attachment; filename=liquipedia.ics")
 	w.Header().Set("Content-Type", "text/calendar")
 	_, err = fmt.Fprintf(w, cal.Serialize())
 	if err != nil {
-		log.Fatal("Error while printing serialized calendar.")
+		logger.Fatal("Error while printing serialized calendar.")
 		return
 	}
 }
