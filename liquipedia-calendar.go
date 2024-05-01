@@ -11,7 +11,7 @@ import (
 	"os"
 )
 
-var logger *log.Logger
+var logger *log.Logger = log.New(os.Stdout, "", 0)
 
 func main() {
 	// Creates a client.
