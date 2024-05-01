@@ -2,12 +2,13 @@ package main
 
 import (
 	"bytes"
+	"cloud.google.com/go/logging"
+	"context"
 	"fmt"
 	"github.com/PuerkitoBio/goquery"
 	"log"
 	"net/http"
 	"os"
-	"cloud.google.com/go/logging"
 )
 
 func main() {
