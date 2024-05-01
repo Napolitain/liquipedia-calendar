@@ -20,7 +20,7 @@ func (queries QueriesMock) createCalendar(document *goquery.Document, player Que
 
 func TestCreateCalendar(t *testing.T) {
 	// Read all data from file resources/scrapping_test_data.html
-	data, err := os.ReadFile("resources/scrapping_test_data.html")
+	data, err := os.ReadFile("resources/scrapping_test_data_html")
 	if err != nil {
 		log.Fatal(err)
 	}
