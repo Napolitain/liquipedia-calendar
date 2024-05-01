@@ -40,7 +40,7 @@ func TestCreateCalendar(t *testing.T) {
 	}
 	// Create iCalendar
 	myQuery := Queries{}
-	cal, err := myQuery.createCalendar(document, "")
+	cal, err := myQuery.createCalendar(document, myQuery.data[0])
 	if err != nil {
 		t.Fatal(err)
 	}
