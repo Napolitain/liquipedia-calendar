@@ -36,6 +36,7 @@ func main() {
 
 func indexHandler(w http.ResponseWriter, r *http.Request) {
 	if r.URL.Path != "/" {
+		logger.Println("Path not supported.")
 		http.NotFound(w, r)
 		return
 	}
@@ -43,7 +44,7 @@ func indexHandler(w http.ResponseWriter, r *http.Request) {
 	// Get query string's name from querystring.
 	querystring := r.URL.Query().Get("query")
 	if querystring == "" {
-		log.Fatal("No query string provided.")
+		logger.Println("No query string provided.")
 		return
 	}
 
@@ -53,7 +54,7 @@ func indexHandler(w http.ResponseWriter, r *http.Request) {
 	// Get data from either cache or scrapping. JSON already parsed and filtered HTML.
 	data, err := getData(r.Context(), querystring)
 	if err != nil {
-		logger.Fatal(err)
+		logger.Println(err)
 		return
 	}
 
@@ -62,20 +63,20 @@ func indexHandler(w http.ResponseWriter, r *http.Request) {
 	var document *goquery.Document
 	document, err = goquery.NewDocumentFromReader(reader)
 	if err != nil {
-		logger.Fatal(err)
+		logger.Println(err)
 	}
 
 	// Create iCalendar
 	cal, err := queries.createCalendar(document)
 	if err != nil {
-		logger.Fatal(err)
+		logger.Println(err)
 	}
 
 	w.Header().Set("Content-Disposition", "attachment; filename=liquipedia.ics")
 	w.Header().Set("Content-Type", "text/calendar")
 	_, err = fmt.Fprintf(w, cal.Serialize())
 	if err != nil {
-		logger.Fatal("Error while printing serialized calendar.")
+		logger.Println("Error while printing serialized calendar.")
 		return
 	}
 }
