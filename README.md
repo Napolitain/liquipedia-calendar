@@ -1,15 +1,5 @@
 # liquipedia-calendar
 
-### Upgraded version of sc2-calendar
-
-I made initially this project in Python / Flask / Redis, but eventually ran into maintenance problems.
-You can look nonetheless at its repository.
-
-Link : https://github.com/Napolitain/sc2-calendar
-
-Now, written in Go, and using Memcached mostly because of its free tier, the application is more maintainable and faster.
-It is also a cool way to learn Go 😁
-
 ### What is it ?
 
 What is it ?
@@ -32,42 +22,3 @@ Once the link added in a Calendar App, events are auto generated and look like t
 ### Features being worked on
 * Specific players, specific tournament
 * A static website to easily make an URL for subscribing (right now, you must fill querystring parameter with some hacks).
-
-
-### System Design
-
-Cache miss
-```mermaid
-flowchart
-    subgraph User
-        user[Google Calendar]
-    end
-    subgraph Google Cloud
-        liquipedia-calendar[Liquipedia Calendar]
-        memcached
-    end
-    subgraph Third Party
-        liquipedia.net
-    end
-    user -->|1. GET| liquipedia-calendar
-    liquipedia-calendar -->|2. GET| memcached
-    liquipedia-calendar -->|3. GET| liquipedia.net
-    liquipedia-calendar -->|4. CREATE| memcached
-```
-
-Cache hit
-```mermaid
-flowchart
-    subgraph User
-        user[Google Calendar]
-    end
-    subgraph Google Cloud
-        liquipedia-calendar[Liquipedia Calendar]
-        memcached
-    end
-    subgraph Third Party
-        liquipedia.net
-    end
-    user -->|1. GET| liquipedia-calendar
-    liquipedia-calendar -->|2. GET| memcached
-```
