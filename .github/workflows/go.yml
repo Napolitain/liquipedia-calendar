@@ -3,11 +3,16 @@ name: Go
 on:
   push:
     branches: [ master ]
+    paths:
+      - '**.go'
+      - 'go.mod'
   pull_request:
     branches: [ master ]
+    paths:
+      - '**.go'
+      - 'go.mod'
 
 jobs:
-
   build:
     runs-on: ubuntu-latest
     permissions:
