@@ -48,5 +48,4 @@ jobs:
       uses: 'google-github-actions/deploy-appengine@v2'
       with:
           project_id: 'liquipedia-calendar'
-          service_account: ${{ secrets.GCLOUD_SERVICE_ACCOUNT_DEPLOY }}
           deploy_flags: '--exclude=".git,.txt,.md,.yml,.gitignore,.github,.idea,.vscode"'
