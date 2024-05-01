@@ -3,3 +3,4 @@ runtime: go122
 handlers:
 - url: /.*
   script: _go_app
+  app_engine_apis: true
