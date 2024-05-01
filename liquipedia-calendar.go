@@ -52,7 +52,7 @@ func indexHandler(w http.ResponseWriter, r *http.Request) {
 	queries := newQueries(querystring)
 
 	// Get data from either cache or scrapping. JSON already parsed and filtered HTML.
-	data, err := getData(r.Context(), querystring)
+	data, err := getData(r.Context(), queries.data[0].game) // TODO: Handle multiple games
 	if err != nil {
 		logger.Println(err)
 		return

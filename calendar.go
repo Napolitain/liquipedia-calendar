@@ -117,7 +117,6 @@ func (queries Queries) createCalendar(document *goquery.Document) (*ics.Calendar
 	cal.SetLastModified(time.Now())
 	// Create events
 	matches := document.Find(".infobox_matches_content")
-	logger.Println("Number of matches: " + strconv.Itoa(matches.Size()))
 	var UIDs []string
 	for i := 0; i < matches.Size(); i++ {
 		// Get event info
@@ -144,7 +143,6 @@ func (queries Queries) createCalendar(document *goquery.Document) (*ics.Calendar
 		if flag {
 			continue
 		}
-		logger.Println("Calendar : " + uid + " - " + teamleft + " - " + teamright + " - " + timestampStr + " - " + tournament + " - " + matchFormat)
 		UIDs = append(UIDs, uid)
 		// Add event
 		event := cal.AddEvent(uid)
