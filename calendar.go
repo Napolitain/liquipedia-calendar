@@ -42,7 +42,7 @@ type Queries struct {
 }
 
 type Calendar interface {
-	createCalendar(document *goquery.Document) (*ics.Calendar, error)
+	createCalendar(document *goquery.Document, player Query) (*ics.Calendar, error)
 }
 
 // Create a Queries struct (made of multiple Query)
@@ -108,7 +108,7 @@ func getData(ctx context.Context, game string) ([]byte, error) {
 /**
  * createCalendar inherits from Queries struct
  */
-func (queries Queries) createCalendar(document *goquery.Document) (*ics.Calendar, error) {
+func (queries Queries) createCalendar(document *goquery.Document, player Query) (*ics.Calendar, error) {
 	// Create iCalendar
 	cal := ics.NewCalendar()
 	cal.SetMethod(ics.MethodRequest)
@@ -122,6 +122,17 @@ func (queries Queries) createCalendar(document *goquery.Document) (*ics.Calendar
 		// Get event info
 		teamleft := matches.Eq(i).Find(".team-left a").Eq(0).Text()
 		teamright := matches.Eq(i).Find(".team-right span:not(.flag):not(.team-template-image):not(.team-template-team-short) a").Eq(0).Text()
+		contains := false
+		for _, p := range player.players {
+			// Filter out events that don't contain at least one player in players
+			if teamleft == p || teamright == p {
+				contains = true
+				break
+			}
+		}
+		if contains == false {
+			continue
+		}
 		matchFormat := matches.Eq(i).Find(".versus abbr").Eq(0).Text()
 		timestampStr, exist := matches.Eq(i).Find("[data-timestamp]").Eq(0).Attr("data-timestamp")
 		if exist != true {

@@ -13,7 +13,7 @@ type QueriesMock struct {
 	data []Query
 }
 
-func (queries QueriesMock) createCalendar(document *goquery.Document) (*ics.Calendar, error) {
+func (queries QueriesMock) createCalendar(document *goquery.Document, player Query) (*ics.Calendar, error) {
 	//TODO implement me
 	panic("implement me")
 }
@@ -40,7 +40,7 @@ func TestCreateCalendar(t *testing.T) {
 	}
 	// Create iCalendar
 	myQuery := Queries{}
-	cal, err := myQuery.createCalendar(document)
+	cal, err := myQuery.createCalendar(document, "")
 	if err != nil {
 		t.Fatal(err)
 	}

@@ -67,7 +67,7 @@ func indexHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Create iCalendar
-	cal, err := queries.createCalendar(document)
+	cal, err := queries.createCalendar(document, queries.data[0])
 	if err != nil {
 		logger.Println(err)
 	}
