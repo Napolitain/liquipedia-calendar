@@ -137,6 +137,7 @@ func (queries Queries) createCalendar(document *goquery.Document) (*ics.Calendar
 		if flag {
 			continue
 		}
+		logger.Println("Calendar : " + uid + " - " + teamleft + " - " + teamright + " - " + timestampStr + " - " + tournament + " - " + matchFormat)
 		UIDs = append(UIDs, uid)
 		// Add event
 		event := cal.AddEvent(uid)

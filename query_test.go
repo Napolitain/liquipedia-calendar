@@ -25,3 +25,10 @@ func Test_newQueries(t *testing.T) {
 		t.Fatal("New queries badly crafted.")
 	}
 }
+
+func Test_newQueries_1(t *testing.T) {
+	queries := newQueries("673d7374617263726166743226703d6d6172752c73657272616c")
+	if queries.data[0].game != "starcraft2" || len(queries.data[0].players) != 2 || queries.data[0].players[0] != "maru" || queries.data[0].players[1] != "serral" {
+		t.Fatal("New queries badly crafted.")
+	}
+}
