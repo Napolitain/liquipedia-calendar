@@ -70,27 +70,33 @@ func getData(ctx context.Context, game string) ([]byte, error) {
 		// If fail, get data from scrapping
 		response, err := getFromLiquipedia(game)
 		if err != nil {
+			logger.Println(err)
 			return nil, err
 		}
 		if response.StatusCode != 200 {
+			logger.Println("Error while getting data from Liquipedia.")
 			return nil, err
 		}
 
 		// Convert from io to []byte
 		body, err := io.ReadAll(response.Body)
 		if err != nil {
+			logger.Println(err)
 			return nil, err
 		}
 
 		// parse JSON
 		body, err = parseJSON(body)
+		logger.Println("Length of body: " + strconv.Itoa(len(body)))
 		if err != nil {
+			logger.Println(err)
 			return nil, err
 		}
 
 		// Save to cache server
 		err = saveToCache(ctx, string(body[:]), game)
 		if err != nil {
+			logger.Println(err)
 			return nil, err
 		}
 		return body, nil
