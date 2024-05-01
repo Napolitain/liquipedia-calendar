@@ -111,6 +111,7 @@ func (queries Queries) createCalendar(document *goquery.Document) (*ics.Calendar
 	cal.SetLastModified(time.Now())
 	// Create events
 	matches := document.Find(".infobox_matches_content")
+	logger.Println("Number of matches: " + strconv.Itoa(matches.Size()))
 	var UIDs []string
 	for i := 0; i < matches.Size(); i++ {
 		// Get event info
