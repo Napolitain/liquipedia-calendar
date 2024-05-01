@@ -27,8 +27,8 @@ func Test_newQueries(t *testing.T) {
 }
 
 func Test_newQueries_1(t *testing.T) {
-	queries := newQueries("673d7374617263726166743226703d6d6172752c73657272616c")
-	if queries.data[0].game != "starcraft2" || len(queries.data[0].players) != 2 || queries.data[0].players[0] != "maru" || queries.data[0].players[1] != "serral" {
+	queries := newQueries("673d7374617263726166743226703d4d6172752c53657272616c")
+	if queries.data[0].game != "starcraft2" || len(queries.data[0].players) != 2 || queries.data[0].players[0] != "Maru" || queries.data[0].players[1] != "Serral" {
 		t.Fatal("New queries badly crafted.")
 	}
 }

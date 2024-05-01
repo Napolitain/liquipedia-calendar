@@ -4,8 +4,8 @@ import (
 	"bytes"
 	"github.com/PuerkitoBio/goquery"
 	ics "github.com/arran4/golang-ical"
-	"google.golang.org/appengine/aetest"
 	"log"
+	"os"
 	"testing"
 )
 
@@ -19,17 +19,10 @@ func (queries QueriesMock) createCalendar(document *goquery.Document, player Que
 }
 
 func TestCreateCalendar(t *testing.T) {
-	return // app engine context is difficult to setup
-	// Create context
-	ctx, done, err := aetest.NewContext()
+	// Read all data from file resources/scrapping_test_data.html
+	data, err := os.ReadFile("resources/scrapping_test_data.html")
 	if err != nil {
-		t.Fatal(err)
-	}
-	defer done()
-	// Get data
-	data, err := getData(ctx, "starcraft2")
-	if err != nil {
-		t.Fatal(err)
+		log.Fatal(err)
 	}
 	// Load the HTML document
 	reader := bytes.NewReader(data)
@@ -39,7 +32,7 @@ func TestCreateCalendar(t *testing.T) {
 		log.Fatal(err)
 	}
 	// Create iCalendar
-	myQuery := Queries{}
+	myQuery := Queries{data: []Query{{game: "starcraft2", players: []string{"Maru", "Serral"}}}}
 	cal, err := myQuery.createCalendar(document, myQuery.data[0])
 	if err != nil {
 		t.Fatal(err)
