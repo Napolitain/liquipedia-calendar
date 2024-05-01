@@ -11,6 +11,8 @@ import (
 	"os"
 )
 
+var logger *log.Logger
+
 func main() {
 	// Creates a client.
 	ctx := context.Background()
@@ -19,7 +21,7 @@ func main() {
 		log.Fatalf("Failed to create logging client: %v", err)
 	}
 	defer client.Close()
-	logger := client.Logger("main-service").StandardLogger(logging.Info)
+	logger = client.Logger("main-service").StandardLogger(logging.Info)
 
 	http.HandleFunc("/", indexHandler)
 	port := os.Getenv("PORT")
