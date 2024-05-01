@@ -74,7 +74,7 @@ func getData(ctx context.Context, game string) ([]byte, error) {
 			return nil, err
 		}
 		if response.StatusCode != 200 {
-			logger.Println("Error while getting data from Liquipedia.")
+			logger.Println("Error while getting data from Liquipedia. Code " + response.Status)
 			return nil, err
 		}
 
