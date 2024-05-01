@@ -2,12 +2,11 @@
 
 ### What is it ?
 
-What is it ?
-sc2-calendar is a web scrapper / iCalendar server which uses https://liquipedia.net/starcraft2/Liquipedia:Upcoming_and_ongoing_matches as a source and Flask as a iCalendar server.
+liquipedia-calendar is a web scrapper / iCalendar server which uses https://liquipedia.net/starcraft2/Liquipedia:Upcoming_and_ongoing_matches as a source and Flask as a iCalendar server.
 
 The end result is a customizable link which permits to subscribe to arbitrary number of players and teams, pro or not as long as it figures on Liquipedia webpage.
 
-You can subscribe to a iCal feed using this link : https://liquipedia-calendar.oa.r.appspot.com/?game=
+You can subscribe to a iCal feed using this link : https://liquipedia-calendar.oa.r.appspot.com/?query=
 ![image](https://user-images.githubusercontent.com/18146363/134248454-f5817f99-e780-431f-b56d-20a8c4d3dbfd.png)
 
 Fill the querystring by visiting : https://liquipedia.net/
@@ -18,7 +17,12 @@ Once the link added in a Calendar App, events are auto generated and look like t
 ### Features supported
 * Every e sports games from liquipedia.net (having a dedicated matches page).
 * Auto updating calendar integrated into standard calendar apps (such as Apple Calendar, Google Calendar, Microsoft Outlook).
+* Specific players, games, teams
 
 ### Features being worked on
-* Specific players, specific tournament
+* Specific tournament
 * A static website to easily make an URL for subscribing (right now, you must fill querystring parameter with some hacks).
+
+### Technical
+
+See [technical architecture here](https://github.com/Napolitain/liquipedia-calendar/blob/master/DESIGN.md)

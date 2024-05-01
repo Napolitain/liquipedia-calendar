@@ -7,13 +7,19 @@ This will take some time as it depends synchronously on the response time of Liq
 
 ```mermaid
 sequenceDiagram
-    User->>Liquipedia Calendar: GET
-    Liquipedia Calendar->>Memcached: GET
-    Memcached-->>Liquipedia Calendar: MISS
-    Liquipedia Calendar->>Liquipedia.net: GET
-    Liquipedia.net->>Liquipedia Calendar: RESPONSE
-    Liquipedia Calendar->>Memcached: CREATE
-    Liquipedia Calendar-->>User: CALENDAR
+    participant Google Calendar
+    box Liquipedia Calendar
+    participant CalDAV
+    participant Memcached
+    end
+    participant Liquipedia.net
+    Google Calendar->>CalDAV: GET
+    CalDAV->>Memcached: GET
+    Memcached-->>CalDAV: MISS
+    CalDAV->>Liquipedia.net: GET
+    Liquipedia.net->>CalDAV: RESPONSE
+    CalDAV->>Memcached: CREATE
+    CalDAV-->>Google Calendar: CALENDAR
 ```
 
 ### Cache hit
@@ -24,10 +30,15 @@ The cache not only speeds up the application, but also protects Liquipedia.net f
 
 ```mermaid
 sequenceDiagram
-    User->>Liquipedia Calendar: GET
-    Liquipedia Calendar->>Memcached: GET
-    Memcached-->>Liquipedia Calendar: RESPONSE
-    Liquipedia Calendar-->>User: CALENDAR
+    participant Google Calendar
+    box Liquipedia Calendar
+        participant CalDAV
+        participant Memcached
+    end
+    Google Calendar->>CalDAV: GET
+    CalDAV->>Memcached: GET
+    Memcached-->>CalDAV: RESPONSE
+    CalDAV-->>Google Calendar: CALENDAR
 ```
 
 ### Google Cloud
