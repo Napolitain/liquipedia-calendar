@@ -52,7 +52,7 @@ jobs:
       uses: actions/checkout@v4
 
     - name: Remove all unnecessary files
-      run: rm -rf .git .txt .md .yml .gitignore .github .idea .vscode resources/
+      run: rm -rf .git .txt .md .yml .gitignore .github .idea .vscode resources/ *_test.go
 
     - name: Auth to Google Cloud
       uses: 'google-github-actions/auth@v2'

@@ -48,10 +48,25 @@ func indexHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// Set headers for the response
+	w.Header().Set("Content-Disposition", "attachment; filename=liquipedia.ics")
+	w.Header().Set("Content-Type", "text/calendar")
+
 	// Get query struct
 	queries := newQueries(querystring)
 
-	// Get data from either cache or scrapping. JSON already parsed and filtered HTML.
+	// Get from cache the game+player calendar if cached. (Superstar player case).
+	calendar, err := getFromCachePlayer(r.Context(), queries.data[0].game, queries.data[0].players[0])
+	if err == nil {
+		_, err = fmt.Fprintf(w, string(calendar.Value))
+		if err != nil {
+			logger.Println("Error while printing serialized calendar.")
+			return
+		}
+		return
+	}
+
+	// Get data from either cache (game generic case) or scrapping. JSON already parsed and filtered HTML.
 	data, err := getData(r.Context(), queries.data[0].game) // TODO: Handle multiple games
 	if err != nil {
 		logger.Println(err)
@@ -72,9 +87,15 @@ func indexHandler(w http.ResponseWriter, r *http.Request) {
 		logger.Println(err)
 	}
 
-	w.Header().Set("Content-Disposition", "attachment; filename=liquipedia.ics")
-	w.Header().Set("Content-Type", "text/calendar")
-	_, err = fmt.Fprintf(w, cal.Serialize())
+	serializedCalendar := cal.Serialize()
+
+	// If it is for a single player, save to cache the game+player calendar (superstar player case).
+	err = saveToCachePlayer(r.Context(), serializedCalendar, queries.data[0].game, queries.data[0].players[0])
+	if err != nil {
+		logger.Println(err)
+	}
+
+	_, err = fmt.Fprintf(w, serializedCalendar)
 	if err != nil {
 		logger.Println("Error while printing serialized calendar.")
 		return

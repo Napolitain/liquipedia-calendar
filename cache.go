@@ -7,17 +7,39 @@ import (
 )
 
 // saveToCache function is used to saveToCache data on Memcached server.
-// A cached entry is a game entry valid for 3 hours. Every player is cached at once, and then can be filtered down.
+// A cached entry is a game entry valid for 1 hour. The whole entry is a HTML string to be filtered down later on for specific players.
+// Reasonably fast, and extremely useful for reducing the load on the third party server Liquipedia.net.
+// Likely will save a 100+ms per request.
 func saveToCache(ctx context.Context, data string, game string) error {
 	item := &memcache.Item{
 		Key:        game,
 		Value:      []byte(data),
-		Expiration: time.Hour * 3,
+		Expiration: time.Hour * 1,
 	}
 	return memcache.Set(ctx, item)
 }
 
-// getFromCache function is used to retrieve data from Memcached server.
+// getFromCache function is used to retrieve data from Memcached server. It returns HTML to be parsed and filtered down for specific players.
+// Reasonably fast, and extremely useful for reducing the load on the third party server Liquipedia.net.
+// Likely will save a 100+ms per request.
 func getFromCache(ctx context.Context, game string) (*memcache.Item, error) {
 	return memcache.Get(ctx, game)
+}
+
+// saveToCachePlayer function is used to saveToCache data on Memcached server. It is used to saveToCache data for a specific player for a specific game.
+// The whole entry is a iCalendar string, ready to be sent to the user as a response directly.
+// Super fast, very useful for reducing the load if the same player is queried multiple times (for example a superstar player).
+func saveToCachePlayer(ctx context.Context, data string, game string, player string) error {
+	item := &memcache.Item{
+		Key:        game + "/" + player,
+		Value:      []byte(data),
+		Expiration: time.Hour * 1,
+	}
+	return memcache.Set(ctx, item)
+}
+
+// getFromCachePlayer function is used to retrieve data from Memcached server. It returns iCalendar string ready to be sent to the user as a response directly.
+// Super fast, very useful for reducing the load if the same player is queried multiple times (for example a superstar player).
+func getFromCachePlayer(ctx context.Context, game string, player string) (*memcache.Item, error) {
+	return memcache.Get(ctx, game+"/"+player)
 }
