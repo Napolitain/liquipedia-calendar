@@ -25,7 +25,10 @@ sequenceDiagram
     Memcached-->>CalDAV: MISS
     CalDAV->>Liquipedia.net: GET
     Liquipedia.net->>CalDAV: RESPONSE
-    CalDAV->>Memcached: CREATE
+    CalDAV->>Memcached: CREATE (GAME HTML)
+    CalDAV-->>CalDAV: PARSE HTML, FILTER PLAYERS
+    CalDAV-->>CalDAV: CREATE CALENDAR
+    CalDAV-->>Memcached: CREATE (SUPERSTAR PLAYER)
     CalDAV-->>Google Calendar: CALENDAR
 ```
 
@@ -51,6 +54,7 @@ sequenceDiagram
     Memcached-->>CalDAV: RESPONSE (HTML)
     CalDAV-->>CalDAV: PARSE HTML, FILTER PLAYERS
     CalDAV-->>CalDAV: CREATE CALENDAR
+    CalDAV-->>Memcached: CREATE (SUPERSTAR PLAYER)
     CalDAV-->>Google Calendar: CALENDAR
 ```
 
