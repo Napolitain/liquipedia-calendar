@@ -3,18 +3,26 @@ name: Go
 on:
   push:
     branches: [ master ]
+    paths:
+      - '**.go'
+      - 'go.mod'
+      - 'app.yaml'
   pull_request:
     branches: [ master ]
+    paths:
+      - '**.go'
+      - 'go.mod'
+      - 'app.yaml'
+  workflow_dispatch:
 
 jobs:
-
-  build:
+  build: # Build and test the Go application
     runs-on: ubuntu-latest
     permissions:
       contents: 'read'
       id-token: 'write'
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v4
 
     - name: Set up Go
       uses: actions/setup-go@v2
@@ -30,6 +38,22 @@ jobs:
     - name: Test
       run: go test -v ./...
 
+  deploy: # Deploy to Google Cloud App Engine
+    # Only deploy on pushes to master branch (not PRs)
+    if: github.ref == 'refs/heads/master'
+    # Only deploy if the build job was successful
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+        contents: 'read'
+        id-token: 'write'
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+
+    - name: Remove all unnecessary files
+      run: rm -rf .git .txt .md .yml .gitignore .github .idea .vscode resources/
+
     - name: Auth to Google Cloud
       uses: 'google-github-actions/auth@v2'
       with:
@@ -41,4 +65,4 @@ jobs:
       uses: 'google-github-actions/deploy-appengine@v2'
       with:
           project_id: 'liquipedia-calendar'
-          service_account: ${{ secrets.GCLOUD_SERVICE_ACCOUNT_DEPLOY }}
+          deploy_flags: '--exclude=".git,.txt,.md,.yml,.gitignore,.github,.idea,.vscode"'

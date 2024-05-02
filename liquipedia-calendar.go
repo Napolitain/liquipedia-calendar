@@ -11,7 +11,7 @@ import (
 	"os"
 )
 
-var logger *log.Logger
+var logger *log.Logger = log.New(os.Stdout, "", 0)
 
 func main() {
 	// Creates a client.
@@ -52,7 +52,7 @@ func indexHandler(w http.ResponseWriter, r *http.Request) {
 	queries := newQueries(querystring)
 
 	// Get data from either cache or scrapping. JSON already parsed and filtered HTML.
-	data, err := getData(r.Context(), querystring)
+	data, err := getData(r.Context(), queries.data[0].game) // TODO: Handle multiple games
 	if err != nil {
 		logger.Println(err)
 		return
@@ -67,7 +67,7 @@ func indexHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Create iCalendar
-	cal, err := queries.createCalendar(document)
+	cal, err := queries.createCalendar(document, queries.data[0])
 	if err != nil {
 		logger.Println(err)
 	}

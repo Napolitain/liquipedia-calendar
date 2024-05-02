@@ -8,6 +8,7 @@ import (
 // getFromLiquipedia function
 func getFromLiquipedia(game string) (*http.Response, error) {
 	url := BASE_URL + game + UPCOMING_MATCHES
+	logger.Println("GET " + url)
 	client := http.Client{}
 	request, err := http.NewRequest("GET", url, nil)
 	if err != nil {
