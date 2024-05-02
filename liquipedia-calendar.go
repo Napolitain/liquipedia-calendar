@@ -60,7 +60,7 @@ func indexHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Get data from either cache (game generic case) or scrapping. JSON already parsed and filtered HTML.
-	data, fromCache, err := getData(r.Context(), queries.data[0].game) // TODO: Handle multiple games
+	data, err := getData(r.Context(), queries.data[0].game) // TODO: Handle multiple games
 	if err != nil {
 		logger.Println(err)
 		return
