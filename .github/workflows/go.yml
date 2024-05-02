@@ -13,15 +13,16 @@ on:
       - '**.go'
       - 'go.mod'
       - 'app.yaml'
+  workflow_dispatch:
 
 jobs:
-  build:
+  build: # Build and test the Go application
     runs-on: ubuntu-latest
     permissions:
       contents: 'read'
       id-token: 'write'
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v4
 
     - name: Set up Go
       uses: actions/setup-go@v2
@@ -36,6 +37,16 @@ jobs:
 
     - name: Test
       run: go test -v ./...
+
+  deploy: # Deploy to Google Cloud App Engine
+    if: github.ref == 'refs/heads/master'
+    runs-on: ubuntu-latest
+    permissions:
+        contents: 'read'
+        id-token: 'write'
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
 
     - name: Auth to Google Cloud
       uses: 'google-github-actions/auth@v2'
