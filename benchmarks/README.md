@@ -20,3 +20,5 @@ If the game cache is hit, the latency is around 6 times higher than the "hello w
 On full miss, the latency is at least 20 times higher than the "hello world" case, with high volatility due to external API calls.
 
 ![img.png](img.png)
+
+![img_1.png](img_1.png)
