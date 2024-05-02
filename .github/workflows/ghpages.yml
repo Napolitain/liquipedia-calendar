@@ -32,7 +32,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
         with:
-          path: static
+          ref: static
         
 
       - name: Detect package manager
