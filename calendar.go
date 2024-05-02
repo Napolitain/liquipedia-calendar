@@ -63,7 +63,7 @@ func newQueries(query string) *Queries {
 }
 
 // getData returns data in []byte format from either cache or scrapping
-func getData(ctx context.Context, game string) ([]byte, error) {
+func getData(ctx context.Context, game string) ([]byte, bool, error) {
 	// Get data from cache server
 	item, err := getFromCache(ctx, game)
 	if err != nil {
@@ -71,18 +71,18 @@ func getData(ctx context.Context, game string) ([]byte, error) {
 		response, err := getFromLiquipedia(game)
 		if err != nil {
 			logger.Println(err)
-			return nil, err
+			return nil, false, err
 		}
 		if response.StatusCode != 200 {
 			logger.Println("Error while getting data from Liquipedia. Code " + response.Status)
-			return nil, err
+			return nil, false, err
 		}
 
 		// Convert from io to []byte
 		body, err := io.ReadAll(response.Body)
 		if err != nil {
 			logger.Println(err)
-			return nil, err
+			return nil, false, err
 		}
 
 		// parse JSON
@@ -90,18 +90,18 @@ func getData(ctx context.Context, game string) ([]byte, error) {
 		logger.Println("Length of body: " + strconv.Itoa(len(body)))
 		if err != nil {
 			logger.Println(err)
-			return nil, err
+			return nil, false, err
 		}
 
 		// Save to cache server
 		err = saveToCache(ctx, string(body[:]), game)
 		if err != nil {
 			logger.Println(err)
-			return nil, err
+			return nil, false, err
 		}
-		return body, nil
+		return body, false, nil
 	} else {
-		return item.Value, nil
+		return item.Value, true, nil
 	}
 }
 

@@ -9,6 +9,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"time"
 )
 
 var logger *log.Logger = log.New(os.Stdout, "", 0)
@@ -35,8 +36,10 @@ func main() {
 }
 
 func indexHandler(w http.ResponseWriter, r *http.Request) {
+	timer := time.Now()
+	// Check if the request is for the root path. If not, return 404.
 	if r.URL.Path != "/" {
-		logger.Println("Path not supported.")
+		logger.Println("Path not supported." + r.URL.Path + " Time: " + time.Since(timer).String())
 		http.NotFound(w, r)
 		return
 	}
@@ -48,26 +51,19 @@ func indexHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Set headers for the response
-	w.Header().Set("Content-Disposition", "attachment; filename=liquipedia.ics")
-	w.Header().Set("Content-Type", "text/calendar")
-
 	// Get query struct
 	queries := newQueries(querystring)
 
 	// Get from cache the game+player calendar if cached. (Superstar player case).
 	calendar, err := getFromCachePlayer(r.Context(), queries.data[0].game, queries.data[0].players[0])
 	if err == nil {
-		_, err = fmt.Fprintf(w, string(calendar.Value))
-		if err != nil {
-			logger.Println("Error while printing serialized calendar.")
-			return
-		}
+		sendCalendar(w, err, string(calendar.Value))
+		logger.Println("Sent from superstar cache. Time: " + time.Since(timer).String())
 		return
 	}
 
 	// Get data from either cache (game generic case) or scrapping. JSON already parsed and filtered HTML.
-	data, err := getData(r.Context(), queries.data[0].game) // TODO: Handle multiple games
+	data, fromCache, err := getData(r.Context(), queries.data[0].game) // TODO: Handle multiple games
 	if err != nil {
 		logger.Println(err)
 		return
@@ -91,9 +87,24 @@ func indexHandler(w http.ResponseWriter, r *http.Request) {
 
 	// If it is for a single player, save to cache the game+player calendar (superstar player case).
 	err = saveToCachePlayer(r.Context(), serializedCalendar, queries.data[0].game, queries.data[0].players[0])
+	sendCalendar(w, err, serializedCalendar)
+	if fromCache {
+		logger.Println("Sent from game cache. Time: " + time.Since(timer).String())
+	} else {
+		logger.Println("Sent from scrapping. Time: " + time.Since(timer).String())
+	}
+}
+
+// sendCalendar function is used to send the calendar to the user.
+// It sends the calendar in iCalendar format.
+func sendCalendar(w http.ResponseWriter, err error, serializedCalendar string) {
 	if err != nil {
 		logger.Println(err)
 	}
+
+	// Set headers for the response
+	w.Header().Set("Content-Disposition", "attachment; filename=liquipedia.ics")
+	w.Header().Set("Content-Type", "text/calendar")
 
 	_, err = fmt.Fprintf(w, serializedCalendar)
 	if err != nil {
