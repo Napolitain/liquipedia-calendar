@@ -20,9 +20,10 @@ Once the link added in a Calendar App, events are auto generated and look like t
 * Every e sports games from liquipedia.net (having a dedicated matches page).
 * Auto updating calendar integrated into standard calendar apps (such as Apple Calendar, Google Calendar, Microsoft Outlook).
 * Specific players, games, teams
+* A static website to easily make an URL for subscribing (right now, you must fill querystring parameter with some hacks).
 
 ### Features being worked on
-* A static website to easily make an URL for subscribing (right now, you must fill querystring parameter with some hacks).
+* For now, none
 
 ### Technical
 
