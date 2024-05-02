@@ -9,7 +9,6 @@ import (
 	"log"
 	"net/http"
 	"os"
-	"time"
 )
 
 var logger *log.Logger = log.New(os.Stdout, "", 0)
@@ -36,10 +35,9 @@ func main() {
 }
 
 func indexHandler(w http.ResponseWriter, r *http.Request) {
-	timer := time.Now()
 	// Check if the request is for the root path. If not, return 404.
 	if r.URL.Path != "/" {
-		logger.Println("Path not supported." + r.URL.Path + " Time: " + time.Since(timer).String())
+		logger.Println("Path not supported." + r.URL.Path)
 		http.NotFound(w, r)
 		return
 	}
@@ -58,7 +56,6 @@ func indexHandler(w http.ResponseWriter, r *http.Request) {
 	calendar, err := getFromCachePlayer(r.Context(), queries.data[0].game, queries.data[0].players[0])
 	if err == nil {
 		sendCalendar(w, err, string(calendar.Value))
-		logger.Println("Sent from superstar cache. Time: " + time.Since(timer).String())
 		return
 	}
 
@@ -88,11 +85,6 @@ func indexHandler(w http.ResponseWriter, r *http.Request) {
 	// If it is for a single player, save to cache the game+player calendar (superstar player case).
 	err = saveToCachePlayer(r.Context(), serializedCalendar, queries.data[0].game, queries.data[0].players[0])
 	sendCalendar(w, err, serializedCalendar)
-	if fromCache {
-		logger.Println("Sent from game cache. Time: " + time.Since(timer).String())
-	} else {
-		logger.Println("Sent from scrapping. Time: " + time.Since(timer).String())
-	}
 }
 
 // sendCalendar function is used to send the calendar to the user.
