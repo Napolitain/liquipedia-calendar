@@ -6,7 +6,7 @@ liquipedia-calendar is a web scrapper / iCalendar server which uses https://liqu
 
 The end result is a customizable link which permits to subscribe to arbitrary number of players and teams, pro or not as long as it figures on Liquipedia webpage.
 
-You can subscribe to a iCal feed using this link : https://liquipedia-calendar.oa.r.appspot.com/?query=[SELECTOR]
+You can subscribe to a iCal feed using this [link](https://napolitain.github.io/liquipedia-calendar/)
 
 Example link for Starcraft 2 with Maru and Serral players : https://liquipedia-calendar.oa.r.appspot.com/?query=673d7374617263726166743226703d4d6172752c53657272616c
 ![image](https://user-images.githubusercontent.com/18146363/134248454-f5817f99-e780-431f-b56d-20a8c4d3dbfd.png)
