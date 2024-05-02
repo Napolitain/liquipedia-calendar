@@ -13,23 +13,23 @@ This will take some time as it depends synchronously on the response time of Liq
 ```mermaid
 sequenceDiagram
     participant Google Calendar
-    box Liquipedia Calendar
-    participant CalDAV
+    box GCP App Engine
+    participant CalDAV (F1)
     participant Memcached
     end
     participant Liquipedia.net
-    Google Calendar->>CalDAV: GET
-    CalDAV->>Memcached: GET (SUPERSTAR PLAYER)
-    Memcached-->>CalDAV: MISS
-    CalDAV->>Memcached: GET (GAME)
-    Memcached-->>CalDAV: MISS
-    CalDAV->>Liquipedia.net: GET
-    Liquipedia.net->>CalDAV: RESPONSE
-    CalDAV->>Memcached: CREATE (GAME HTML)
-    CalDAV-->>CalDAV: PARSE HTML, FILTER PLAYERS
-    CalDAV-->>CalDAV: CREATE CALENDAR
-    CalDAV-->>Memcached: CREATE (SUPERSTAR PLAYER)
-    CalDAV-->>Google Calendar: CALENDAR
+    Google Calendar->>CalDAV (F1): GET
+    CalDAV (F1)->>Memcached: GET (SUPERSTAR PLAYER)
+    Memcached-->>CalDAV (F1): MISS
+    CalDAV (F1)->>Memcached: GET (GAME)
+    Memcached-->>CalDAV (F1): MISS
+    CalDAV (F1)->>Liquipedia.net: GET
+    Liquipedia.net->>CalDAV (F1): RESPONSE
+    CalDAV (F1)->>Memcached: CREATE (GAME HTML)
+    CalDAV (F1)-->>CalDAV (F1): PARSE HTML, FILTER PLAYERS
+    CalDAV (F1)-->>CalDAV (F1): CREATE CALENDAR
+    CalDAV (F1)-->>Memcached: CREATE (SUPERSTAR PLAYER)
+    CalDAV (F1)-->>Google Calendar: CALENDAR
 ```
 
 ### Cache hit (game)
@@ -43,19 +43,19 @@ The cache not only speeds up the application by removing external network calls,
 ```mermaid
 sequenceDiagram
     participant Google Calendar
-    box Liquipedia Calendar
-        participant CalDAV
+    box GCP App Engine
+        participant CalDAV (F1)
         participant Memcached
     end
-    Google Calendar->>CalDAV: GET
-    CalDAV->>Memcached: GET (SUPERSTAR PLAYER)
-    Memcached-->>CalDAV: MISS
-    CalDAV->>Memcached: GET (GAME)
-    Memcached-->>CalDAV: RESPONSE (HTML)
-    CalDAV-->>CalDAV: PARSE HTML, FILTER PLAYERS
-    CalDAV-->>CalDAV: CREATE CALENDAR
-    CalDAV-->>Memcached: CREATE (SUPERSTAR PLAYER)
-    CalDAV-->>Google Calendar: CALENDAR
+    Google Calendar->>CalDAV (F1): GET
+    CalDAV (F1)->>Memcached: GET (SUPERSTAR PLAYER)
+    Memcached-->>CalDAV (F1): MISS
+    CalDAV (F1)->>Memcached: GET (GAME)
+    Memcached-->>CalDAV (F1): RESPONSE (HTML)
+    CalDAV (F1)-->>CalDAV (F1): PARSE HTML, FILTER PLAYERS
+    CalDAV (F1)-->>CalDAV (F1): CREATE CALENDAR
+    CalDAV (F1)-->>Memcached: CREATE (SUPERSTAR PLAYER)
+    CalDAV (F1)-->>Google Calendar: CALENDAR
 ```
 
 ### Cache hit (superstar player)
@@ -66,12 +66,12 @@ and the data is already in the format required by Google Calendar. There is no H
 ```mermaid
 sequenceDiagram
     participant Google Calendar
-    box Liquipedia Calendar
-        participant CalDAV
+    box GCP App Engine
+        participant CalDAV (F1)
         participant Memcached
     end
-    Google Calendar->>CalDAV: GET
-    CalDAV->>Memcached: GET (SUPERSTAR PLAYER)
-    Memcached-->>CalDAV: RESPONSE (CALENDAR)
-    CalDAV-->>Google Calendar: CALENDAR
+    Google Calendar->>CalDAV (F1): GET
+    CalDAV (F1)->>Memcached: GET (SUPERSTAR PLAYER)
+    Memcached-->>CalDAV (F1): RESPONSE (CALENDAR)
+    CalDAV (F1)-->>Google Calendar: CALENDAR
 ```
