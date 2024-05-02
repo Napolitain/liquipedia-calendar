@@ -39,7 +39,10 @@ jobs:
       run: go test -v ./...
 
   deploy: # Deploy to Google Cloud App Engine
+    # Only deploy on pushes to master branch (not PRs)
     if: github.ref == 'refs/heads/master'
+    # Only deploy if the build job was successful
+    needs: build
     runs-on: ubuntu-latest
     permissions:
         contents: 'read'
