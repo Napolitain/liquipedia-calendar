@@ -51,6 +51,9 @@ jobs:
     - name: Checkout
       uses: actions/checkout@v4
 
+    - name: Remove all unnecessary files
+      run: rm -rf .git .txt .md .yml .gitignore .github .idea .vscode resources/
+
     - name: Auth to Google Cloud
       uses: 'google-github-actions/auth@v2'
       with:
