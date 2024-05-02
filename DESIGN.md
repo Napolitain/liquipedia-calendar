@@ -14,7 +14,9 @@ sequenceDiagram
     end
     participant Liquipedia.net
     Google Calendar->>CalDAV: GET
-    CalDAV->>Memcached: GET
+    CalDAV->>Memcached: GET (SUPERSTAR PLAYER)
+    Memcached-->>CalDAV: MISS
+    CalDAV->>Memcached: GET (GAME)
     Memcached-->>CalDAV: MISS
     CalDAV->>Liquipedia.net: GET
     Liquipedia.net->>CalDAV: RESPONSE
@@ -22,7 +24,7 @@ sequenceDiagram
     CalDAV-->>Google Calendar: CALENDAR
 ```
 
-### Cache hit
+### Cache hit (game)
 
 Once a first request has been made, the data will be stored in the cache. Subsequent requests will be served from the cache, which is much faster than fetching the data from Liquipedia.net.
 The data will expire after a set period of time, for now 3 hours. As a request is tied to a game (but not a player!), the cache key is the game name.
@@ -36,8 +38,31 @@ sequenceDiagram
         participant Memcached
     end
     Google Calendar->>CalDAV: GET
-    CalDAV->>Memcached: GET
-    Memcached-->>CalDAV: RESPONSE
+    CalDAV->>Memcached: GET (SUPERSTAR PLAYER)
+    Memcached-->>CalDAV: MISS
+    CalDAV->>Memcached: GET (GAME)
+    Memcached-->>CalDAV: RESPONSE (HTML)
+    CalDAV-->>CalDAV: PARSE HTML, FILTER PLAYERS
+    CalDAV-->>CalDAV: CREATE CALENDAR
+    CalDAV-->>Google Calendar: CALENDAR
+```
+
+### Cache hit (superstar player)
+
+Once a first request has been made, the data will be stored in the cache. Subsequent requests will be served from the cache, which is much faster than fetching the data from Liquipedia.net.
+The data will expire after a set period of time, for now 3 hours. As a request is tied to a game (but not a player!), the cache key is the game name.
+The cache not only speeds up the application, but also protects Liquipedia.net from being overwhelmed by requests.
+
+```mermaid
+sequenceDiagram
+    participant Google Calendar
+    box Liquipedia Calendar
+        participant CalDAV
+        participant Memcached
+    end
+    Google Calendar->>CalDAV: GET
+    CalDAV->>Memcached: GET (SUPERSTAR PLAYER)
+    Memcached-->>CalDAV: RESPONSE (CALENDAR)
     CalDAV-->>Google Calendar: CALENDAR
 ```
 
