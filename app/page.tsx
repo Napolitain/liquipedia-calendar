@@ -68,7 +68,7 @@ function onKeyDown(event: React.KeyboardEvent<HTMLInputElement>) {
 
     function updateTrackedPlayersView() {
         // Update the tracked players input
-        const trackedPlayersElement: HTMLElement = document.getElementById("tracked-players");
+        const trackedPlayersElement: HTMLElement = document.getElementById("tracked-players")!;
         trackedPlayersElement.innerHTML = "";
         for (const game in trackedPlayers) {
             const g = trackedPlayers[game];
@@ -82,7 +82,7 @@ function onKeyDown(event: React.KeyboardEvent<HTMLInputElement>) {
                     // Remove the player from the list of tracked players
                     trackedPlayers[game].delete(player);
                     // Update the tracked players input
-                    document.getElementById(span.id).remove();
+                    document.getElementById(span.id)!.remove();
                     // Update the output link
                     updateOutputLink();
                 }
