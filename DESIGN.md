@@ -24,7 +24,7 @@ sequenceDiagram
     CalDAV (F1)->>Memcached: GET (GAME)
     Memcached-->>CalDAV (F1): MISS
     CalDAV (F1)->>Liquipedia.net: GET
-    Liquipedia.net->>CalDAV (F1): RESPONSE
+    Liquipedia.net-->>CalDAV (F1): RESPONSE
     CalDAV (F1)->>Memcached: CREATE (GAME HTML)
     CalDAV (F1)-->>CalDAV (F1): PARSE HTML, FILTER PLAYERS
     CalDAV (F1)-->>CalDAV (F1): CREATE CALENDAR

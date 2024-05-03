@@ -5,3 +5,10 @@ app_engine_apis: true
 handlers:
 - url: /.*
   script: _go_app
+
+automatic_scaling:
+  min_instances: 0 # No instances running when there is no traffic to save money
+  max_instances: 2 # Avoid high bills
+  cool_down_period_sec: 180
+  cpu_utilization:
+    target_utilization: 0.9 # High CPU utilization because latency is not a concern
