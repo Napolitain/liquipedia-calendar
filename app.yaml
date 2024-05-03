@@ -7,8 +7,6 @@ handlers:
   script: _go_app
 
 automatic_scaling:
-  min_instances: 0 # No instances running when there is no traffic to save money
-  max_instances: 2 # Avoid high bills
-  cool_down_period_sec: 180
-  cpu_utilization:
-    target_utilization: 0.9 # High CPU utilization because latency is not a concern
+  min_instances: 0 # Latency is acceptable, so we can have 0 instances by default. We then have cold starts.
+  max_instances: 2
+  target_cpu_utilization: 0.9 # High latency is acceptable, so let's save some money
