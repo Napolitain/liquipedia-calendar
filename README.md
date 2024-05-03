@@ -1,8 +1,10 @@
 # liquipedia-calendar
 
+Watch this video to introduce you to Liquipedia Calendar : https://www.youtube.com/watch?v=wwhYcQSVFdA
+
 ### What is it ?
 
-liquipedia-calendar is a web scrapper / iCalendar server which uses https://liquipedia.net/starcraft2/Liquipedia:Upcoming_and_ongoing_matches as a source and Flask as a iCalendar server.
+liquipedia-calendar is a web scrapper / iCalendar server which uses https://liquipedia.net/starcraft2/Liquipedia:Upcoming_and_ongoing_matches as a source and Go as a iCalendar server.
 
 The end result is a customizable link which permits to subscribe to arbitrary number of players and teams, pro or not as long as it figures on Liquipedia webpage.
 
