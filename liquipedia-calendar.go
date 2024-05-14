@@ -46,11 +46,17 @@ func indexHandler(w http.ResponseWriter, r *http.Request) {
 	querystring := r.URL.Query().Get("query")
 	if querystring == "" {
 		logger.Println("No query string provided.")
+		http.Error(w, "Bad request", http.StatusBadRequest)
 		return
 	}
 
 	// Get query struct
-	queries := newQueries(querystring)
+	queries, err := newQueries(querystring)
+	if err != nil {
+		logger.Println(err)
+		http.Error(w, "Bad request", http.StatusBadRequest)
+		return
+	}
 
 	// Get from cache the game+player calendar if cached. (Superstar player case).
 	calendar, err := getFromCachePlayer(r.Context(), queries.data[0].game, queries.data[0].players[0])
@@ -63,6 +69,7 @@ func indexHandler(w http.ResponseWriter, r *http.Request) {
 	data, err := getData(r.Context(), queries.data[0].game) // TODO: Handle multiple games
 	if err != nil {
 		logger.Println(err)
+		http.NotFound(w, r)
 		return
 	}
 
@@ -72,12 +79,14 @@ func indexHandler(w http.ResponseWriter, r *http.Request) {
 	document, err = goquery.NewDocumentFromReader(reader)
 	if err != nil {
 		logger.Println(err)
+		http.Error(w, "Internal server error", http.StatusInternalServerError)
 	}
 
 	// Create iCalendar
 	cal, err := queries.createCalendar(document, queries.data[0])
 	if err != nil {
 		logger.Println(err)
+		http.Error(w, "Internal server error", http.StatusInternalServerError)
 	}
 
 	serializedCalendar := cal.Serialize()

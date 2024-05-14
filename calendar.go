@@ -46,10 +46,11 @@ type Calendar interface {
 }
 
 // Create a Queries struct (made of multiple Query)
-func newQueries(query string) *Queries {
+func newQueries(query string) (*Queries, error) {
 	decodeString, err := hex.DecodeString(query)
 	if err != nil {
-		return nil
+		logger.Println(err)
+		return nil, err
 	}
 	queries := bytes.Split(decodeString, []byte(";")) // g=starcraft2&p=maru,serral
 	var result Queries
@@ -59,7 +60,7 @@ func newQueries(query string) *Queries {
 		players := bytes.Split(q[1], []byte("="))
 		result.data = append(result.data, *newQuery(string(game[1][:]), string(players[1][:])))
 	}
-	return &result
+	return &result, nil
 }
 
 // getData returns data in []byte format from either cache or scrapping
