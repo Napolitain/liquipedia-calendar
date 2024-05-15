@@ -6,9 +6,12 @@ import (
 	"context"
 	"fmt"
 	"github.com/PuerkitoBio/goquery"
+	"k8s.io/apimachinery/pkg/util/sets"
+	_ "k8s.io/apimachinery/pkg/util/sets"
 	"log"
 	"net/http"
 	"os"
+	"strings"
 )
 
 var logger *log.Logger = log.New(os.Stdout, "", 0)
@@ -42,6 +45,13 @@ func indexHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// Get from cache the queries calendar if cached. (Superstar player case).
+	calendar, err := getFromCachePlayer(r.Context(), r.URL.Query().Get("query"))
+	if err == nil {
+		sendCalendar(w, err, string(calendar.Value))
+		return
+	}
+
 	// Get query string's name from querystring.
 	querystring := r.URL.Query().Get("query")
 	if querystring == "" {
@@ -58,10 +68,9 @@ func indexHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Get from cache the game+player calendar if cached. (Superstar player case).
-	calendar, err := getFromCachePlayer(r.Context(), queries.data[0].game, queries.data[0].players[0])
-	if err == nil {
-		sendCalendar(w, err, string(calendar.Value))
+	// If the game inside query is not valid, return bad request.
+	if !isValidGame(r.Context(), queries.data[0].game) {
+		http.Error(w, "Bad request", http.StatusBadRequest)
 		return
 	}
 
@@ -92,8 +101,39 @@ func indexHandler(w http.ResponseWriter, r *http.Request) {
 	serializedCalendar := cal.Serialize()
 
 	// If it is for a single player, save to cache the game+player calendar (superstar player case).
-	err = saveToCachePlayer(r.Context(), serializedCalendar, queries.data[0].game, queries.data[0].players[0])
+	err = saveToCachePlayer(r.Context(), serializedCalendar, r.URL.Query().Get("query"))
 	sendCalendar(w, err, serializedCalendar)
+}
+
+// TODO: do the function, test and move to other file.
+func isValidGame(ctx context.Context, game string) bool {
+	// List of games supported by Liquipedia API : important to avoid not only errors, but attacks.
+	// Retrieve from the cache first.
+	item, err := getGamesFromCache(ctx)
+	// Cache result
+	if err == nil {
+		// Convert string to sets.String
+		gamesMap := sets.NewString()
+		// Deserialize string1,string2 to []string then to Map
+		gamesMap.Insert(strings.Split(string(item.Value), ",")...)
+		// Check if the game is in the map, return true if it is.
+		return gamesMap.Has(game)
+	}
+	// Cache miss, log the issue, but continue.
+	logger.Println(err)
+	// Otherwise, from the DB.
+	// Otherwise, from the API.
+	gamesMap, err := fetchGames()
+	if err != nil {
+		logger.Println(err)
+		return false
+	}
+	// Save to cache
+	// Serialize Map to []string, then to string1,string2
+	gamesList := gamesMap.List()
+	games := strings.Join(gamesList, ",")
+	err = saveGamesToCache(ctx, games)
+	return gamesMap.Has(game)
 }
 
 // sendCalendar function is used to send the calendar to the user.

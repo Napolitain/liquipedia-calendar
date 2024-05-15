@@ -1,6 +1,6 @@
 module github.com/Napolitain/liquipedia_calendar
 
-go 1.22
+go 1.22.0
 
 require google.golang.org/appengine v1.6.8
 
@@ -8,6 +8,7 @@ require (
 	cloud.google.com/go/logging v1.9.0
 	github.com/PuerkitoBio/goquery v1.9.2
 	github.com/arran4/golang-ical v0.2.8
+	k8s.io/apimachinery v0.30.0
 )
 
 require (
@@ -17,7 +18,7 @@ require (
 	cloud.google.com/go/longrunning v0.5.2 // indirect
 	github.com/andybalholm/cascadia v1.3.2 // indirect
 	github.com/golang/groupcache v0.0.0-20210331224755-41bb18bfe9da // indirect
-	github.com/golang/protobuf v1.5.3 // indirect
+	github.com/golang/protobuf v1.5.4 // indirect
 	github.com/google/s2a-go v0.1.7 // indirect
 	github.com/googleapis/enterprise-certificate-proxy v0.3.2 // indirect
 	github.com/googleapis/gax-go/v2 v2.12.0 // indirect
