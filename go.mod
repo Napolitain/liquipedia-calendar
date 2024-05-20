@@ -8,7 +8,7 @@ require (
 	cloud.google.com/go/logging v1.9.0
 	github.com/PuerkitoBio/goquery v1.9.2
 	github.com/arran4/golang-ical v0.2.8
-	k8s.io/apimachinery v0.30.0
+	k8s.io/apimachinery v0.30.1
 )
 
 require (
