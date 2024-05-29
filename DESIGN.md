@@ -21,6 +21,8 @@ sequenceDiagram
     Google Calendar->>CalDAV (F1): GET
     CalDAV (F1)->>Memcached: GET (SUPERSTAR PLAYER)
     Memcached-->>CalDAV (F1): MISS
+    CalDAV (F1)->>Memcached: IS VALID GAME
+    Memcached-->>CalDAV (F1): YES
     CalDAV (F1)->>Memcached: GET (GAME)
     Memcached-->>CalDAV (F1): MISS
     CalDAV (F1)->>Liquipedia.net: GET
@@ -28,9 +30,11 @@ sequenceDiagram
     CalDAV (F1)->>Memcached: CREATE (GAME HTML)
     CalDAV (F1)-->>CalDAV (F1): PARSE HTML, FILTER PLAYERS
     CalDAV (F1)-->>CalDAV (F1): CREATE CALENDAR
-    CalDAV (F1)-->>Memcached: CREATE (SUPERSTAR PLAYER)
+    CalDAV (F1)->>Memcached: CREATE (SUPERSTAR PLAYER)
     CalDAV (F1)-->>Google Calendar: CALENDAR
 ```
+
+Note that `IS VALID GAME` will be a check on validity of the request. Assuming it is a well intentioned user, it will always be yes, and very oftenly a cache hit.
 
 ### Cache hit (game)
 
@@ -50,6 +54,8 @@ sequenceDiagram
     Google Calendar->>CalDAV (F1): GET
     CalDAV (F1)->>Memcached: GET (SUPERSTAR PLAYER)
     Memcached-->>CalDAV (F1): MISS
+    CalDAV (F1)->>Memcached: IS VALID GAME
+    Memcached-->>CalDAV (F1): YES
     CalDAV (F1)->>Memcached: GET (GAME)
     Memcached-->>CalDAV (F1): RESPONSE (HTML)
     CalDAV (F1)-->>CalDAV (F1): PARSE HTML, FILTER PLAYERS
@@ -74,4 +80,48 @@ sequenceDiagram
     CalDAV (F1)->>Memcached: GET (SUPERSTAR PLAYER)
     Memcached-->>CalDAV (F1): RESPONSE (CALENDAR)
     CalDAV (F1)-->>Google Calendar: CALENDAR
+```
+
+### Protecting against non valid use
+
+If a mal intentioned user use a non valid game entry, it should in theory not proceed to an HTTP request to liquipedia.net, and deny instantly.
+To do so, here's the `IS VALID GAME` check detailed :
+
+**Valid games entry empty, invalid game**
+
+```mermaid
+sequenceDiagram
+    participant Google Calendar
+    box GCP App Engine
+        participant CalDAV (F1)
+        participant Memcached
+    end
+    participant Liquipedia.net
+    Google Calendar->>CalDAV (F1): GET
+    CalDAV (F1)->>Memcached: GET (SUPERSTAR PLAYER)
+    Memcached-->>CalDAV (F1): MISS (if HITS, the check is skipped)
+    CalDAV (F1)->>Memcached: GET VALID GAMES
+    Memcached-->>CalDAV (F1): MISS
+    CalDAV (F1)->>Liquipedia.net: GET VALID GAMES
+    Liquipedia.net -->> CalDAV (F1): JSON RESPONSE
+    CalDAV (F1)->>Memcached: SET VALID GAMES FOR UNDETERMINED LIFETIME
+    CalDAV (F1)-->>Google Calendar: 400 Bad Request
+```
+
+**Valid games entry filled, invalid game**
+
+```mermaid
+sequenceDiagram
+    participant Google Calendar
+    box GCP App Engine
+        participant CalDAV (F1)
+        participant Memcached
+    end
+    participant Liquipedia.net
+    Google Calendar->>CalDAV (F1): GET
+    CalDAV (F1)->>Memcached: GET (SUPERSTAR PLAYER)
+    Memcached-->>CalDAV (F1): MISS (if HITS, the check is skipped)
+    CalDAV (F1)->>Memcached: GET VALID GAMES
+    Memcached-->>CalDAV (F1): HIT
+    CalDAV (F1)-->>Google Calendar: 400 Bad Request
 ```
