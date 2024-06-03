@@ -7,7 +7,7 @@ require google.golang.org/appengine v1.6.8
 require (
 	cloud.google.com/go/logging v1.9.0
 	github.com/PuerkitoBio/goquery v1.9.2
-	github.com/arran4/golang-ical v0.2.8
+	github.com/arran4/golang-ical v0.3.0
 	k8s.io/apimachinery v0.30.0
 )
 
