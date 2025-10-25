@@ -6,62 +6,68 @@ on:
     paths:
       - '**.go'
       - 'go.mod'
-      - 'app.yaml'
   pull_request:
     branches: [ master ]
     paths:
       - '**.go'
       - 'go.mod'
-      - 'app.yaml'
   workflow_dispatch:
 
 jobs:
   build: # Build and test the Go application
     runs-on: ubuntu-latest
-    permissions:
-      contents: 'read'
-      id-token: 'write'
     steps:
     - uses: actions/checkout@v4
 
     - name: Set up Go
-      uses: actions/setup-go@v2
+      uses: actions/setup-go@v5
       with:
-        go-version: 1.22
+        go-version: '1.25'
         
     - name: Dependencies
       run: go mod tidy
 
     - name: Build
-      run: go build -v ./...
+      run: go build -v ./cmd/liquipedia-calendar
 
     - name: Test
       run: go test -v ./...
 
-  deploy: # Deploy to Google Cloud App Engine
-    # Only deploy on pushes to master branch (not PRs)
-    if: github.ref == 'refs/heads/master'
-    # Only deploy if the build job was successful
+  release: # Create release with binary
+    # Only run on pushes to master branch (not PRs)
+    if: github.ref == 'refs/heads/master' && github.event_name == 'push'
+    # Only run if the build job was successful
     needs: build
     runs-on: ubuntu-latest
     permissions:
-        contents: 'read'
-        id-token: 'write'
+      contents: write
     steps:
-    - name: Checkout
-      uses: actions/checkout@v4
-
-    - name: Remove all unnecessary files
-      run: rm -rf .git .txt .md .yml .gitignore .github .idea .vscode resources/ *_test.go .png
-
-    - name: Auth to Google Cloud
-      uses: 'google-github-actions/auth@v2'
+    - uses: actions/checkout@v4
       with:
-        project_id: 'liquipedia-calendar'
-        workload_identity_provider: ${{ secrets.GCLOUD_WORKLOAD_IDENTITY_FEDERATION }}
-        service_account: ${{ secrets.GCLOUD_SERVICE_ACCOUNT_DEPLOY }}
+        fetch-depth: 0
 
-    - name: Deploy to Google Cloud App Engine
-      uses: 'google-github-actions/deploy-appengine@v2'
+    - name: Set up Go
+      uses: actions/setup-go@v5
       with:
-          project_id: 'liquipedia-calendar'
+        go-version: '1.25'
+
+    - name: Get version
+      id: version
+      run: |
+        # Use the short commit SHA as version
+        VERSION="v0.0.0-$(git rev-parse --short HEAD)"
+        echo "version=$VERSION" >> $GITHUB_OUTPUT
+
+    - name: Build binary
+      run: |
+        go build -v -o liquipedia-calendar ./cmd/liquipedia-calendar
+
+    - name: Create Release
+      uses: softprops/action-gh-release@v1
+      with:
+        tag_name: ${{ steps.version.outputs.version }}
+        name: Release ${{ steps.version.outputs.version }}
+        files: liquipedia-calendar
+        generate_release_notes: true
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
