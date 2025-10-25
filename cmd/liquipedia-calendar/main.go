@@ -16,11 +16,9 @@ import (
 	"k8s.io/apimachinery/pkg/util/sets"
 )
 
-var logger *slog.Logger
-
 func main() {
 	// Create structured logger
-	logger = slog.New(slog.NewJSONHandler(os.Stdout, &slog.HandlerOptions{
+	logger := slog.New(slog.NewJSONHandler(os.Stdout, &slog.HandlerOptions{
 		Level: slog.LevelInfo,
 	}))
 	slog.SetDefault(logger)
@@ -31,17 +29,17 @@ func main() {
 	port := os.Getenv("PORT")
 	if port == "" {
 		port = "8080"
-		logger.Info("Defaulting to port", "port", port)
+		slog.Info("Defaulting to port", "port", port)
 	}
 
-	logger.Info("Starting server", "port", port)
+	slog.Info("Starting server", "port", port)
 	
 	requestHandler := func(ctx *fasthttp.RequestCtx) {
 		indexHandler(ctx)
 	}
 
 	if err := fasthttp.ListenAndServe(fmt.Sprintf(":%s", port), requestHandler); err != nil {
-		logger.Error("Failed to start server", "error", err)
+		slog.Error("Failed to start server", "error", err)
 		os.Exit(1)
 	}
 }
@@ -49,7 +47,7 @@ func main() {
 func indexHandler(ctx *fasthttp.RequestCtx) {
 	// Check if the request is for the root path. If not, return 404.
 	if string(ctx.Path()) != "/" {
-		logger.Info("Path not supported", "path", string(ctx.Path()))
+		slog.Info("Path not supported", "path", string(ctx.Path()))
 		ctx.Error("Not Found", fasthttp.StatusNotFound)
 		return
 	}
@@ -64,7 +62,7 @@ func indexHandler(ctx *fasthttp.RequestCtx) {
 
 	// Get query string's name from querystring.
 	if queryString == "" {
-		logger.Info("No query string provided")
+		slog.Info("No query string provided")
 		ctx.Error("Bad request", fasthttp.StatusBadRequest)
 		return
 	}
@@ -72,7 +70,7 @@ func indexHandler(ctx *fasthttp.RequestCtx) {
 	// Get query struct
 	queries, err := handler.NewQueries(queryString)
 	if err != nil {
-		logger.Error("Failed to parse queries", "error", err)
+		slog.Error("Failed to parse queries", "error", err)
 		ctx.Error("Bad request", fasthttp.StatusBadRequest)
 		return
 	}
@@ -86,7 +84,7 @@ func indexHandler(ctx *fasthttp.RequestCtx) {
 	// Get data from either cache (game generic case) or scrapping. JSON already parsed and filtered HTML.
 	data, err := getData(queries.Data[0].Game)
 	if err != nil {
-		logger.Error("Failed to get data", "error", err)
+		slog.Error("Failed to get data", "error", err)
 		ctx.Error("Not Found", fasthttp.StatusNotFound)
 		return
 	}
@@ -96,7 +94,7 @@ func indexHandler(ctx *fasthttp.RequestCtx) {
 	var document *goquery.Document
 	document, err = goquery.NewDocumentFromReader(reader)
 	if err != nil {
-		logger.Error("Failed to parse HTML", "error", err)
+		slog.Error("Failed to parse HTML", "error", err)
 		ctx.Error("Internal server error", fasthttp.StatusInternalServerError)
 		return
 	}
@@ -104,7 +102,7 @@ func indexHandler(ctx *fasthttp.RequestCtx) {
 	// Create iCalendar
 	cal, err := icalendar.CreateCalendar(document, queries.Data[0])
 	if err != nil {
-		logger.Error("Failed to create calendar", "error", err)
+		slog.Error("Failed to create calendar", "error", err)
 		ctx.Error("Internal server error", fasthttp.StatusInternalServerError)
 		return
 	}
@@ -130,11 +128,11 @@ func isValidGame(game string) bool {
 		return gamesMap.Has(game)
 	}
 	// Cache miss, log the issue, but continue.
-	logger.Info("Games cache miss, fetching from API")
+	slog.Info("Games cache miss, fetching from API")
 	// Otherwise, from the API.
 	gamesMap, err := scraping.FetchGames()
 	if err != nil {
-		logger.Error("Failed to fetch games", "error", err)
+		slog.Error("Failed to fetch games", "error", err)
 		return false
 	}
 	// Save to cache
@@ -166,7 +164,7 @@ func getData(game string) ([]byte, error) {
 	// If fail, get data from scrapping
 	data, err := scraping.GetFromLiquipedia(game)
 	if err != nil {
-		logger.Error("Failed to get data from Liquipedia", "error", err)
+		slog.Error("Failed to get data from Liquipedia", "error", err)
 		return nil, err
 	}
 
