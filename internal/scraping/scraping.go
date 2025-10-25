@@ -10,12 +10,24 @@ import (
 
 const BASE_URL = "https://liquipedia.net/"
 const UPCOMING_MATCHES = "/api.php?action=parse&format=json&page=Liquipedia:Upcoming_and_ongoing_matches"
+const MATCHES = "/api.php?action=parse&format=json&page=Liquipedia:Matches"
 
 var logger = slog.Default()
 
+// getMatchesPage returns the appropriate matches page path for the given game
+func getMatchesPage(game string) string {
+	// League of Legends uses a different matches page
+	if game == "leagueoflegends" {
+		return MATCHES
+	}
+	// Default for all other games
+	return UPCOMING_MATCHES
+}
+
 // GetFromLiquipedia function gets data from Liquipedia API and returns parsed HTML
 func GetFromLiquipedia(game string) ([]byte, error) {
-	url := BASE_URL + game + UPCOMING_MATCHES
+	matchesPage := getMatchesPage(game)
+	url := BASE_URL + game + matchesPage
 	logger.Info("GET request to Liquipedia", "url", url)
 	
 	req := fasthttp.AcquireRequest()
