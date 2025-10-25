@@ -14,7 +14,29 @@ const MATCHES = "/api.php?action=parse&format=json&page=Liquipedia:Matches"
 
 var logger = slog.Default()
 
-// ScrapingStrategy defines the interface for different scraping strategies
+// ScrapingStrategy defines the interface for different scraping strategies.
+// Implement this interface to create custom scraping strategies for games that
+// require different API endpoints or scraping logic.
+//
+// Example usage:
+//
+//	type CustomGameStrategy struct{}
+//
+//	func (s *CustomGameStrategy) GetMatchesPage(game string) string {
+//	    return "/custom/api/endpoint"
+//	}
+//
+//	func (s *CustomGameStrategy) ScrapeData(game string) ([]byte, error) {
+//	    // Custom implementation
+//	    matchesPage := s.GetMatchesPage(game)
+//	    return fetchFromLiquipedia(game, matchesPage)
+//	}
+//
+// Then update GetScrapingStrategy to return your custom strategy:
+//
+//	if game == "customgame" {
+//	    return &CustomGameStrategy{}
+//	}
 type ScrapingStrategy interface {
 	// GetMatchesPage returns the API endpoint path for the given game
 	GetMatchesPage(game string) string
