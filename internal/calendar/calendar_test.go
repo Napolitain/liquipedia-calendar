@@ -1,26 +1,18 @@
-package main
+package calendar
 
 import (
 	"bytes"
-	"github.com/PuerkitoBio/goquery"
-	ics "github.com/arran4/golang-ical"
 	"log"
 	"os"
 	"testing"
+
+	"github.com/Napolitain/liquipedia_calendar/internal/handler"
+	"github.com/PuerkitoBio/goquery"
 )
-
-type QueriesMock struct {
-	data []Query
-}
-
-func (queries QueriesMock) createCalendar(document *goquery.Document, player Query) (*ics.Calendar, error) {
-	//TODO implement me
-	panic("implement me")
-}
 
 func TestCreateCalendar(t *testing.T) {
 	// Read all data from file resources/scrapping_test_data.html
-	data, err := os.ReadFile("resources/scrapping_test_data_html")
+	data, err := os.ReadFile("../../resources/scrapping_test_data_html")
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -32,8 +24,8 @@ func TestCreateCalendar(t *testing.T) {
 		log.Fatal(err)
 	}
 	// Create iCalendar
-	myQuery := Queries{data: []Query{{game: "starcraft2", players: []string{"Maru", "Serral"}}}}
-	cal, err := myQuery.createCalendar(document, myQuery.data[0])
+	myQuery := handler.Query{Game: "starcraft2", Players: []string{"Maru", "Serral"}}
+	cal, err := CreateCalendar(document, myQuery)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -46,6 +38,6 @@ func TestCreateCalendar(t *testing.T) {
 				t.Fatal("Identical ID between two events.")
 			}
 		}
-		_ = append(iteratedEvents, events[i].Id())
+		iteratedEvents = append(iteratedEvents, events[i].Id())
 	}
 }
