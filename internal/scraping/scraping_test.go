@@ -40,3 +40,41 @@ func Test_FetchGames(t *testing.T) {
 		return
 	}
 }
+
+func Test_getMatchesPage(t *testing.T) {
+	tests := []struct {
+		name     string
+		game     string
+		expected string
+	}{
+		{
+			name:     "League of Legends uses Matches page",
+			game:     "leagueoflegends",
+			expected: MATCHES,
+		},
+		{
+			name:     "Starcraft2 uses Upcoming and ongoing matches page",
+			game:     "starcraft2",
+			expected: UPCOMING_MATCHES,
+		},
+		{
+			name:     "Dota2 uses Upcoming and ongoing matches page",
+			game:     "dota2",
+			expected: UPCOMING_MATCHES,
+		},
+		{
+			name:     "Counter-Strike uses Upcoming and ongoing matches page",
+			game:     "counterstrike",
+			expected: UPCOMING_MATCHES,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			result := getMatchesPage(tt.game)
+			if result != tt.expected {
+				t.Errorf("getMatchesPage(%s) = %s, expected %s", tt.game, result, tt.expected)
+			}
+		})
+	}
+}
