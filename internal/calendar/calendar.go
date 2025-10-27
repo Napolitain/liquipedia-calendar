@@ -1,6 +1,8 @@
 package calendar
 
 import (
+	"crypto/sha256"
+	"encoding/hex"
 	"errors"
 	"log/slog"
 	"strconv"
@@ -53,7 +55,12 @@ func CreateCalendar(document *goquery.Document, player handler.Query) (*ics.Cale
 			return nil, errors.New("Error while converting string to int.")
 		}
 		tournament := matches.Eq(i).Find(".match-filler div div a").Eq(0).Text()
-		uid := timestampStr + teamleft_text + teamright_text + tournament + "@lcalendar"
+		// Create a unique and RFC 5545 compliant UID using SHA256 hash
+		// Hash the combination of timestamp, teams, and tournament to ensure uniqueness
+		// This avoids spaces and special characters in the UID
+		uidComponents := timestampStr + "-" + teamleft_text + "-" + teamright_text + "-" + tournament
+		hash := sha256.Sum256([]byte(uidComponents))
+		uid := hex.EncodeToString(hash[:]) + "@lcalendar"
 		flag := false // Ignore identical UIDs for now
 		for j := 0; j < len(UIDs); j++ {
 			if UIDs[j] == uid {
