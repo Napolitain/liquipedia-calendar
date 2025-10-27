@@ -1,6 +1,8 @@
 package calendar
 
 import (
+	"crypto/sha256"
+	"encoding/hex"
 	"errors"
 	"log/slog"
 	"strconv"
@@ -14,12 +16,16 @@ import (
 var logger = slog.Default()
 
 // CreateCalendar creates an iCalendar from a goquery document and player query
+// Compliant with RFC 5545 (iCalendar) and RFC 4791 (CalDAV) standards
 func CreateCalendar(document *goquery.Document, player handler.Query) (*ics.Calendar, error) {
-	// Create iCalendar
+	// Create iCalendar with RFC 5545 required properties
 	cal := ics.NewCalendar()
-	cal.SetMethod(ics.MethodRequest)
+	cal.SetMethod(ics.MethodPublish) // PUBLISH is more appropriate for read-only calendars
 	cal.SetProductId("-//liquipedia-calendar//en")
-	cal.SetVersion("2.0")
+	cal.SetVersion("2.0")                                 // Required by RFC 5545
+	cal.SetCalscale("GREGORIAN")                          // Optional but explicit is better
+	cal.SetName("Liquipedia Calendar")                    // X-WR-CALNAME for calendar name
+	cal.SetDescription("Esports matches from Liquipedia") // X-WR-CALDESC
 	cal.SetLastModified(time.Now())
 	// Create events
 	matches := document.Find(".infobox_matches_content")
@@ -53,7 +59,12 @@ func CreateCalendar(document *goquery.Document, player handler.Query) (*ics.Cale
 			return nil, errors.New("Error while converting string to int.")
 		}
 		tournament := matches.Eq(i).Find(".match-filler div div a").Eq(0).Text()
-		uid := timestampStr + teamleft_text + teamright_text + tournament + "@lcalendar"
+		// Create a unique and RFC 5545 compliant UID using SHA256 hash
+		// Hash the combination of timestamp, teams, and tournament to ensure uniqueness
+		// This avoids spaces and special characters in the UID
+		uidComponents := timestampStr + "-" + teamleft_text + "-" + teamright_text + "-" + tournament
+		hash := sha256.Sum256([]byte(uidComponents))
+		uid := hex.EncodeToString(hash[:]) + "@lcalendar"
 		flag := false // Ignore identical UIDs for now
 		for j := 0; j < len(UIDs); j++ {
 			if UIDs[j] == uid {
@@ -65,15 +76,18 @@ func CreateCalendar(document *goquery.Document, player handler.Query) (*ics.Cale
 			continue
 		}
 		UIDs = append(UIDs, uid)
-		// Add event
+		// Add event with RFC 5545 required and recommended properties
 		event := cal.AddEvent(uid)
-		event.SetCreatedTime(time.Now())
-		event.SetDtStampTime(time.Now())
-		event.SetModifiedAt(time.Now())
-		event.SetStartAt(time.Unix(timestamp, 0))
-		event.SetEndAt(time.Unix(timestamp+3600, 0))
-		event.SetSummary(teamleft_text + " - " + teamright_text)
-		event.SetLocation(tournament + " (" + matchFormat + ")")
+		event.SetCreatedTime(time.Now())                                                                // CREATED (optional but recommended)
+		event.SetDtStampTime(time.Now())                                                                // DTSTAMP (required)
+		event.SetModifiedAt(time.Now())                                                                 // LAST-MODIFIED (optional but recommended)
+		event.SetStartAt(time.Unix(timestamp, 0))                                                       // DTSTART (required)
+		event.SetEndAt(time.Unix(timestamp+3600, 0))                                                    // DTEND (required, assuming 1 hour duration)
+		event.SetSummary(teamleft_text + " - " + teamright_text)                                        // SUMMARY (optional but recommended)
+		event.SetLocation(tournament + " (" + matchFormat + ")")                                        // LOCATION (optional but recommended)
+		event.SetDescription("Match: " + teamleft_text + " vs " + teamright_text + " in " + tournament) // DESCRIPTION (optional but recommended)
+		event.SetStatus(ics.ObjectStatusConfirmed)                                                      // STATUS (optional but recommended)
+		event.SetSequence(0)                                                                            // SEQUENCE (optional but recommended, 0 for new events)
 	}
 	return cal, nil
 }
