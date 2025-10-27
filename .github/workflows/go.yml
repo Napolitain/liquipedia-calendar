@@ -54,7 +54,7 @@ jobs:
     - name: Get version
       id: version
       run: |
-        # Use calendar versioning: YYYYMMDD-commit
+        # Use calendar versioning: YYYY.MM.DD-commit
         VERSION="$(date -u +%Y.%m.%d)-$(git rev-parse --short HEAD)"
         echo "version=$VERSION" >> $GITHUB_OUTPUT
 
