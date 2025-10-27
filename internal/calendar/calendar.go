@@ -16,12 +16,16 @@ import (
 var logger = slog.Default()
 
 // CreateCalendar creates an iCalendar from a goquery document and player query
+// Compliant with RFC 5545 (iCalendar) and RFC 4791 (CalDAV) standards
 func CreateCalendar(document *goquery.Document, player handler.Query) (*ics.Calendar, error) {
-	// Create iCalendar
+	// Create iCalendar with RFC 5545 required properties
 	cal := ics.NewCalendar()
-	cal.SetMethod(ics.MethodRequest)
+	cal.SetMethod(ics.MethodPublish) // PUBLISH is more appropriate for read-only calendars
 	cal.SetProductId("-//liquipedia-calendar//en")
-	cal.SetVersion("2.0")
+	cal.SetVersion("2.0")                                 // Required by RFC 5545
+	cal.SetCalscale("GREGORIAN")                          // Optional but explicit is better
+	cal.SetName("Liquipedia Calendar")                    // X-WR-CALNAME for calendar name
+	cal.SetDescription("Esports matches from Liquipedia") // X-WR-CALDESC
 	cal.SetLastModified(time.Now())
 	// Create events
 	matches := document.Find(".infobox_matches_content")
@@ -72,15 +76,18 @@ func CreateCalendar(document *goquery.Document, player handler.Query) (*ics.Cale
 			continue
 		}
 		UIDs = append(UIDs, uid)
-		// Add event
+		// Add event with RFC 5545 required and recommended properties
 		event := cal.AddEvent(uid)
-		event.SetCreatedTime(time.Now())
-		event.SetDtStampTime(time.Now())
-		event.SetModifiedAt(time.Now())
-		event.SetStartAt(time.Unix(timestamp, 0))
-		event.SetEndAt(time.Unix(timestamp+3600, 0))
-		event.SetSummary(teamleft_text + " - " + teamright_text)
-		event.SetLocation(tournament + " (" + matchFormat + ")")
+		event.SetCreatedTime(time.Now())                                                                // CREATED (optional but recommended)
+		event.SetDtStampTime(time.Now())                                                                // DTSTAMP (required)
+		event.SetModifiedAt(time.Now())                                                                 // LAST-MODIFIED (optional but recommended)
+		event.SetStartAt(time.Unix(timestamp, 0))                                                       // DTSTART (required)
+		event.SetEndAt(time.Unix(timestamp+3600, 0))                                                    // DTEND (required, assuming 1 hour duration)
+		event.SetSummary(teamleft_text + " - " + teamright_text)                                        // SUMMARY (optional but recommended)
+		event.SetLocation(tournament + " (" + matchFormat + ")")                                        // LOCATION (optional but recommended)
+		event.SetDescription("Match: " + teamleft_text + " vs " + teamright_text + " in " + tournament) // DESCRIPTION (optional but recommended)
+		event.SetStatus(ics.ObjectStatusConfirmed)                                                      // STATUS (optional but recommended)
+		event.SetSequence(0)                                                                            // SEQUENCE (optional but recommended, 0 for new events)
 	}
 	return cal, nil
 }
