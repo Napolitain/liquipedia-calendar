@@ -54,8 +54,8 @@ jobs:
     - name: Get version
       id: version
       run: |
-        # Use the short commit SHA as version
-        VERSION="v0.0.0-$(git rev-parse --short HEAD)"
+        # Use calendar versioning: YYYY.MM.DD-commit
+        VERSION="$(date -u +%Y.%m.%d)-$(git rev-parse --short HEAD)"
         echo "version=$VERSION" >> $GITHUB_OUTPUT
 
     - name: Build binary
