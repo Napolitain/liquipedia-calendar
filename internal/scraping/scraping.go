@@ -14,19 +14,90 @@ const MATCHES = "/api.php?action=parse&format=json&page=Liquipedia:Matches"
 
 var logger = slog.Default()
 
-// getMatchesPage returns the appropriate matches page path for the given game
-func getMatchesPage(game string) string {
-	// League of Legends uses a different matches page
-	if game == "leagueoflegends" {
-		return MATCHES
-	}
-	// Default for all other games
+// ScrapingStrategy defines the interface for different scraping strategies.
+// Implement this interface to create custom scraping strategies for games that
+// require different API endpoints or scraping logic.
+//
+// Example usage:
+//
+//	type CustomGameStrategy struct{}
+//
+//	func (s *CustomGameStrategy) GetMatchesPage(game string) string {
+//	    return "/custom/api/endpoint"
+//	}
+//
+//	func (s *CustomGameStrategy) ScrapeData(game string) ([]byte, error) {
+//	    // Custom implementation
+//	    matchesPage := s.GetMatchesPage(game)
+//	    return fetchFromLiquipedia(game, matchesPage)
+//	}
+//
+// Then update GetScrapingStrategy to return your custom strategy:
+//
+//	if game == "customgame" {
+//	    return &CustomGameStrategy{}
+//	}
+type ScrapingStrategy interface {
+	// GetMatchesPage returns the API endpoint path for the given game
+	GetMatchesPage(game string) string
+	// ScrapeData fetches and returns the HTML data from Liquipedia
+	ScrapeData(game string) ([]byte, error)
+}
+
+// DefaultScrapingStrategy implements the default scraping strategy for most games
+type DefaultScrapingStrategy struct{}
+
+// GetMatchesPage returns the default matches page path
+func (s *DefaultScrapingStrategy) GetMatchesPage(game string) string {
 	return UPCOMING_MATCHES
 }
 
+// ScrapeData fetches data from Liquipedia using the default strategy
+func (s *DefaultScrapingStrategy) ScrapeData(game string) ([]byte, error) {
+	matchesPage := s.GetMatchesPage(game)
+	return fetchFromLiquipedia(game, matchesPage)
+}
+
+// LeagueOfLegendsScrapingStrategy implements the scraping strategy for League of Legends
+type LeagueOfLegendsScrapingStrategy struct{}
+
+// GetMatchesPage returns the League of Legends specific matches page path
+func (s *LeagueOfLegendsScrapingStrategy) GetMatchesPage(game string) string {
+	return MATCHES
+}
+
+// ScrapeData fetches data from Liquipedia using the League of Legends strategy
+func (s *LeagueOfLegendsScrapingStrategy) ScrapeData(game string) ([]byte, error) {
+	matchesPage := s.GetMatchesPage(game)
+	return fetchFromLiquipedia(game, matchesPage)
+}
+
+// GetScrapingStrategy returns the appropriate scraping strategy for the given game
+func GetScrapingStrategy(game string) ScrapingStrategy {
+	// League of Legends uses a different strategy
+	if game == "leagueoflegends" {
+		return &LeagueOfLegendsScrapingStrategy{}
+	}
+	// Default strategy for all other games
+	return &DefaultScrapingStrategy{}
+}
+
+// getMatchesPage returns the appropriate matches page path for the given game
+// Deprecated: Use GetScrapingStrategy(game).GetMatchesPage(game) instead
+func getMatchesPage(game string) string {
+	strategy := GetScrapingStrategy(game)
+	return strategy.GetMatchesPage(game)
+}
+
 // GetFromLiquipedia function gets data from Liquipedia API and returns parsed HTML
+// It uses the appropriate scraping strategy based on the game
 func GetFromLiquipedia(game string) ([]byte, error) {
-	matchesPage := getMatchesPage(game)
+	strategy := GetScrapingStrategy(game)
+	return strategy.ScrapeData(game)
+}
+
+// fetchFromLiquipedia is a helper function that performs the actual HTTP request and parsing
+func fetchFromLiquipedia(game string, matchesPage string) ([]byte, error) {
 	url := BASE_URL + game + matchesPage
 	logger.Info("GET request to Liquipedia", "url", url)
 	

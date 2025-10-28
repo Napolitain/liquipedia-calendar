@@ -78,3 +78,79 @@ func Test_getMatchesPage(t *testing.T) {
 		})
 	}
 }
+
+func Test_GetScrapingStrategy(t *testing.T) {
+	tests := []struct {
+		name         string
+		game         string
+		expectedType string
+	}{
+		{
+			name:         "League of Legends returns LeagueOfLegendsScrapingStrategy",
+			game:         "leagueoflegends",
+			expectedType: "*scraping.LeagueOfLegendsScrapingStrategy",
+		},
+		{
+			name:         "Starcraft2 returns DefaultScrapingStrategy",
+			game:         "starcraft2",
+			expectedType: "*scraping.DefaultScrapingStrategy",
+		},
+		{
+			name:         "Dota2 returns DefaultScrapingStrategy",
+			game:         "dota2",
+			expectedType: "*scraping.DefaultScrapingStrategy",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			strategy := GetScrapingStrategy(tt.game)
+			if strategy == nil {
+				t.Fatal("Expected non-nil strategy")
+			}
+
+			// Check the type of strategy
+			switch tt.expectedType {
+			case "*scraping.LeagueOfLegendsScrapingStrategy":
+				if _, ok := strategy.(*LeagueOfLegendsScrapingStrategy); !ok {
+					t.Errorf("Expected LeagueOfLegendsScrapingStrategy, got %T", strategy)
+				}
+			case "*scraping.DefaultScrapingStrategy":
+				if _, ok := strategy.(*DefaultScrapingStrategy); !ok {
+					t.Errorf("Expected DefaultScrapingStrategy, got %T", strategy)
+				}
+			}
+		})
+	}
+}
+
+func Test_ScrapingStrategy_GetMatchesPage(t *testing.T) {
+	tests := []struct {
+		name     string
+		strategy ScrapingStrategy
+		game     string
+		expected string
+	}{
+		{
+			name:     "DefaultScrapingStrategy returns UPCOMING_MATCHES",
+			strategy: &DefaultScrapingStrategy{},
+			game:     "starcraft2",
+			expected: UPCOMING_MATCHES,
+		},
+		{
+			name:     "LeagueOfLegendsScrapingStrategy returns MATCHES",
+			strategy: &LeagueOfLegendsScrapingStrategy{},
+			game:     "leagueoflegends",
+			expected: MATCHES,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			result := tt.strategy.GetMatchesPage(tt.game)
+			if result != tt.expected {
+				t.Errorf("GetMatchesPage(%s) = %s, expected %s", tt.game, result, tt.expected)
+			}
+		})
+	}
+}
